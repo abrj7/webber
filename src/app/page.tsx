@@ -5,20 +5,31 @@ import { Home, Info, LayoutGrid, HandHeart, HelpCircle, Users } from "lucide-rea
 import styles from "./page.module.css";
 import Dashboard from "@/components/ui/Dashboard";
 import CustomCanvas from "@/components/canvas/CustomCanvas";
+import AuthPage from "@/components/auth/AuthPage";
 
-type ViewState = "LANDING" | "DASHBOARD" | "CANVAS";
+// View states: AUTH (login/signup) -> LANDING -> DASHBOARD -> CANVAS
+type ViewState = "AUTH" | "LANDING" | "DASHBOARD" | "CANVAS";
 
 export default function HomePage() {
-  const [view, setView] = useState<ViewState>("LANDING");
+  // Start with AUTH view - user must login/signup first
+  const [view, setView] = useState<ViewState>("AUTH");
 
+  // Auth page - login/signup
+  if (view === "AUTH") {
+    return <AuthPage onAuthSuccess={() => setView("LANDING")} />;
+  }
+
+  // Dashboard - project gallery
   if (view === "DASHBOARD") {
     return <Dashboard onCreateNew={() => setView("CANVAS")} onHome={() => setView("LANDING")} />;
   }
 
+  // Canvas - drawing area
   if (view === "CANVAS") {
     return <CustomCanvas onBack={() => setView("DASHBOARD")} />;
   }
 
+  // Landing page (shown after auth)
   return (
     <main className="mesh-background">
       <div className={styles.landingContainer}>
