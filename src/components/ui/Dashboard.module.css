@@ -1,0 +1,139 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  background-color: #1a1b1e; /* Dark background like reference */
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.newBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #8ab4f8; /* Light blue accent */
+  color: #202124;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.newBtn:hover {
+  opacity: 0.9;
+}
+
+.imageBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #8ab4f8;
+  border: 1px solid #5f6368;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.imageBtn:hover {
+  background: rgba(138, 180, 248, 0.08);
+}
+
+.menuBtn {
+  background: none;
+  border: none;
+  color: #e8eaed;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.menuBtn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.grid {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: #202124;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border: 1px solid #3c4043;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: #5f6368;
+}
+
+.preview {
+  height: 150px;
+  background-color: white; /* Canvas preview usually white */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.newPreview {
+  background-color: #303134;
+}
+
+.plusIcon {
+  color: #5f6368;
+}
+
+.cardFooter {
+  padding: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #202124;
+}
+
+.cardTitle {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #e8eaed;
+}
+
+.cardDate {
+  display: block;
+  font-size: 0.75rem;
+  color: #9aa0a6;
+  margin-top: 2px;
+}
+
+.cardMenuBtn {
+  background: none;
+  border: none;
+  color: #9aa0a6;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.cardMenuBtn:hover {
+  color: white;
+}

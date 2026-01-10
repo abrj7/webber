@@ -1,10 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=VT323&display=swap');
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --accent: #0070f3;
-  --canvas-bg: #111111;
+  --background: #ffffff;
+  --foreground: #002b36;
+  --accent-teal: #005461;
+  --accent-blue: #4988C4;
+  --canvas-bg: #f8f9fa;
+  --dot-color: rgba(0, 84, 97, 0.1);
 }
 
 * {
@@ -22,8 +24,24 @@ body {
   width: 100vw;
 }
 
-.canvas-container {
-  height: 100vh;
+/* Mesh Gradient Background */
+.mesh-background {
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(73, 136, 196, 0.2) 0%, transparent 60%), /* Blue center */
+    radial-gradient(circle at 100% 0%, rgba(0, 84, 97, 0.2) 0%, transparent 50%),   /* Teal top right */
+    radial-gradient(circle at 0% 100%, rgba(0, 84, 97, 0.15) 0%, transparent 50%);  /* Teal bottom left */
+  position: relative;
   width: 100vw;
-  background: var(--canvas-bg);
+  height: 100vh;
+}
+
+/* Dot Grid Overlay */
+.mesh-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
 }
