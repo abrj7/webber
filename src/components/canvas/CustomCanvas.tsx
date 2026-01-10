@@ -3,50 +3,53 @@
 import { useRef, useState, useEffect } from "react";
 import styles from "./CustomCanvas.module.css";
 import { ArrowLeft, Send } from "lucide-react";
+import { useStore } from "@/lib/store";
+import WebsitePreview from "../renderer/WebsitePreview";
 
 export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
   const [color, setColor] = useState("#000000");
+  
+  // Store
+  const { setGenerating, setActiveWebsite, isGenerating } = useStore();
 
-  useEffect(() => {
+  // Initialize canvas with white background
+  const initCanvas = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
 
-    // High DPI setup
-    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    // Set canvas size to match display size (no DPI scaling for simplicity)
+    canvas.width = rect.width;
+    canvas.height = rect.height;
     
     const context = canvas.getContext("2d");
     if (context) {
-      context.scale(dpr, dpr);
+      // Fill with white background FIRST
+      context.fillStyle = "#FFFFFF";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Then set up drawing styles
       context.lineCap = "round";
       context.lineJoin = "round";
       context.lineWidth = 3;
       context.strokeStyle = color;
+      
+      return context;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const context = initCanvas();
+    if (context) {
       setCtx(context);
     }
-
-    // Handle resize
-    const handleResize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      if (context) {
-        context.scale(dpr, dpr);
-        context.lineCap = "round";
-        context.lineJoin = "round";
-        context.lineWidth = 3;
-        context.strokeStyle = color;
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    
+    // Don't resize - it clears the canvas. User can refresh if needed.
   }, []);
 
   // Update color when state changes
@@ -95,9 +98,66 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     };
   };
 
+  const handleGenerate = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    setGenerating(true);
+    
+    try {
+      // 1. Get Image
+      const imageBase64 = canvas.toDataURL("image/png");
+
+      // DEBUG: Log and open the captured image in a new tab
+      console.log("📸 Canvas captured! Image size:", imageBase64.length, "bytes");
+      console.log("🔗 Opening captured image in new tab for preview...");
+      
+      // Open the image in a new tab so you can see exactly what Gemini receives
+      const debugWindow = window.open();
+      if (debugWindow) {
+        debugWindow.document.write(`
+          <html>
+            <head><title>Debug: Canvas Capture</title></head>
+            <body style="margin:0; background:#000; display:flex; flex-direction:column; align-items:center; padding:20px;">
+              <h2 style="color:white; font-family:sans-serif;">This is what Gemini sees:</h2>
+              <img src="${imageBase64}" style="max-width:90%; border:2px solid #4988C4; border-radius:8px;"/>
+            </body>
+          </html>
+        `);
+      }
+
+      // 2. Call API
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image: imageBase64,
+          type: "Landing Page", // Hardcoded for now, could be passed as prop
+          prompt: "Convert this wireframe into a website." // Optional additional prompt
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert("Error generating site: " + data.error);
+      } else {
+        // 3. Update Store
+        setActiveWebsite(data);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
-      {/* Toolbar */}
+      {/* Website Preview Modal */}
+      <WebsitePreview />
+
       <div className={styles.toolbar}>
         <button onClick={onBack} className={styles.iconBtn}>
           <ArrowLeft size={20} />
@@ -125,9 +185,14 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
           </button>
         </div>
 
-        <button className={styles.generateBtn}>
+        <button 
+          className={styles.generateBtn}
+          onClick={handleGenerate}
+          disabled={isGenerating}
+          style={{ opacity: isGenerating ? 0.7 : 1, cursor: isGenerating ? 'wait' : 'pointer' }}
+        >
           <Send size={16} style={{ marginRight: '8px' }}/>
-          Generate
+          {isGenerating ? "Magic..." : "Generate"}
         </button>
       </div>
 
