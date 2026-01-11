@@ -210,6 +210,10 @@
   min-width: 0;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .canvasSection {
   flex: 1;
   min-width: 0;

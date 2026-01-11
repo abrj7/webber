@@ -856,16 +856,15 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
 
         <div className={styles.splitContainer} ref={containerRef}>
           {/* tldraw Canvas */}
-          {viewMode !== 'preview' && (
-            <div
-              className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''}`}
-              style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
-            >
-              <Tldraw
-                key={projectId || 'new-project'}
-                onMount={handleMount}
-                persistenceKey={projectId ? `webber-project-${projectId}` : undefined}
-              />
+          <div
+            className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''} ${viewMode === 'preview' ? styles.hidden : ''}`}
+            style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
+          >
+            <Tldraw
+              key={projectId || 'new-project'}
+              onMount={handleMount}
+              persistenceKey={projectId ? `webber-project-${projectId}` : undefined}
+            />
 
               {/* Welcome Overlay - disappears on first action */}
               {showWelcome && (
@@ -927,11 +926,10 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
           )}
 
           {/* Preview Section */}
-          {viewMode !== 'canvas' && (
-            <div
-              className={`${styles.previewSection} ${viewMode === 'preview' ? styles.fullWidth : ''}`}
-              style={viewMode === 'split' ? { width: `${100 - splitPosition}%`, flex: 'none' } : undefined}
-            >
+          <div
+            className={`${styles.previewSection} ${viewMode === 'preview' ? styles.fullWidth : ''} ${viewMode === 'canvas' ? styles.hidden : ''}`}
+            style={viewMode === 'split' ? { width: `${100 - splitPosition}%`, flex: 'none' } : undefined}
+          >
               {viewingVersion ? (
                 <div className={styles.versionBanner}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -980,7 +978,6 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                 title="Live Preview"
               />
             </div>
-          )}
         </div>
 
         {/* Chat Panel */}
