@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "latest",
+    "bcryptjs": "^3.0.3",
     "jszip": "^3.10.1",
     "lucide-react": "latest",
     "mongodb": "^6.21.0",
@@ -21,6 +22,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
