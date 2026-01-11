@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fuzzy+Bubbles:wght@400;700&display=swap');
+
 /* Canvas & Main Layout */
 .main {
   display: flex;
@@ -27,7 +29,7 @@
   transform: translateX(-50%) rotate(-5deg);
   width: 150px;
   height: 150px;
-  background-color: #4c1d95; /* Deep purple */
+  background-color: #005461;
   border: 3px solid #fff;
   border-radius: 12px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
@@ -35,7 +37,7 @@
   align-items: center;
   justify-content: center;
   color: white;
-  font-family: 'VT323', monospace;
+  font-family: 'Fuzzy Bubbles', cursive;
   font-size: 1.2rem;
   cursor: grab;
   transition: transform 0.2s;
@@ -48,44 +50,71 @@
 }
 
 .date {
-  font-family: 'VT323', monospace;
+  font-family: 'Fuzzy Bubbles', cursive;
   letter-spacing: 2px;
   margin-bottom: 1rem;
   opacity: 0.7;
 }
 
 .heroTitle {
-  font-family: 'VT323', monospace;
+  font-family: 'Fuzzy Bubbles', cursive;
   font-size: 5rem;
   line-height: 1;
   margin-bottom: 2rem;
   text-transform: uppercase;
   text-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+  color: #005461;
 }
 
 .subtitle {
+  font-family: 'Outfit', sans-serif;
   font-size: 1.2rem;
   margin-bottom: 3rem;
   opacity: 0.8;
 }
 
+/* Start Button - Diagonal Swipe Effect */
 .startBtn {
-  background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%);
-  color: white;
-  border: none;
+  background: transparent;
+  border: 2px solid #005461;
+  color: #005461;
   padding: 1rem 3rem;
   font-size: 1.2rem;
   border-radius: 8px;
   font-family: 'Outfit', sans-serif;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-  transition: all 0.2s ease;
+  transition: all 0.5s;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+}
+
+.startBtn::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 0%;
+  top: 0;
+  left: -40px;
+  transform: skewX(45deg);
+  background: linear-gradient(135deg, #005461 0%, #4988c4 100%);
+  z-index: -1;
+  transition: all 0.5s;
 }
 
 .startBtn:hover {
+  color: white;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 84, 97, 0.3);
+}
+
+.startBtn:hover::before {
+  width: 160%;
+}
+
+.startBtn:active {
+  transform: translateY(0);
 }
 
 .dock {
@@ -113,7 +142,7 @@
 }
 
 .dockItem:hover {
-  color: #9333ea;
+  color: #005461;
 }
 
 /* Canvas Header (Only visible in canvas mode) */
@@ -136,7 +165,8 @@
 }
 
 .badge {
-  font-size: 0.7rem;
+  font-family: 'Fuzzy Bubbles', cursive;
+  font-size: 0.8rem;
   background: #333;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
@@ -149,12 +179,39 @@
 }
 
 .generateBtn {
-  background: #0070f3;
-  color: white;
-  border: none;
+  background: transparent;
+  border: 2px solid #4988c4;
+  color: #4988c4;
   padding: 0.5rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.5s;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+}
+
+.generateBtn::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 0%;
+  top: 0;
+  left: -40px;
+  transform: skewX(45deg);
+  background-color: #4988c4;
+  z-index: -1;
+  transition: all 0.5s;
+}
+
+.generateBtn:hover {
+  color: white;
+}
+
+.generateBtn:hover::before {
+  width: 160%;
 }
 
 .canvasWrapper {

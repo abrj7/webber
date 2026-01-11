@@ -46,8 +46,8 @@ export default function Dashboard({ onCreateNew, onHome }: DashboardProps) {
       {/* Refined Sidebar */}
       <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
         <div className={styles['logo-container']}>
-          <div className={styles['logo-square']}>DH</div>
-          {!isSidebarCollapsed && <span className={styles['logo-text']}>DeltaHacks</span>}
+          <div className={styles['logo-square']}>SK</div>
+          {!isSidebarCollapsed && <span className={styles['logo-text']}>Sketchy</span>}
         </div>
 
         <nav className={styles['nav-group']}>
@@ -117,7 +117,7 @@ export default function Dashboard({ onCreateNew, onHome }: DashboardProps) {
           <div className={styles['grid-templates']}>
             <div className={styles['card-new']} style={{ borderStyle: 'dashed', borderWidth: '2px' }} onClick={onCreateNew}>
               <div className={styles['icon-wrap']}>
-                <Plus size={32} color="#10b981" strokeWidth={2.5} />
+                <Plus size={32} color="#000000" strokeWidth={2.5} />
               </div>
               <span style={{ fontWeight: 700, fontSize: '1.125rem' }}>Blank Space</span>
             </div>

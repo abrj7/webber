@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Fuzzy+Bubbles:wght@400;700&display=swap');
 
 .panel {
     width: 320px;
@@ -59,10 +59,13 @@
 }
 
 .title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: #005461;
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .closeBtn {
@@ -128,29 +131,48 @@
     color: #9ca3af;
 }
 
+/* Apply Button - Diagonal Swipe Effect */
 .applyBtn {
     width: 100%;
     padding: 0.875rem;
-    background: white;
-    border: 2px solid #111827;
+    background: transparent;
+    border: 2px solid #005461;
     border-radius: 10px;
     font-weight: 600;
     font-size: 0.95rem;
     font-family: 'Outfit', sans-serif;
-    color: #111827;
+    color: #005461;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.5s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+}
+
+.applyBtn::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 0%;
+    top: 0;
+    left: -40px;
+    transform: skewX(45deg);
+    background: linear-gradient(135deg, #005461 0%, #4988c4 100%);
+    z-index: -1;
+    transition: all 0.5s;
 }
 
 .applyBtn:hover:not(:disabled) {
-    background: #111827;
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px -4px rgba(0, 84, 97, 0.3);
+}
+
+.applyBtn:hover:not(:disabled)::before {
+    width: 160%;
 }
 
 .applyBtn:disabled {
@@ -174,22 +196,41 @@
     gap: 0.5rem;
 }
 
+/* Chip - Subtle swipe effect */
 .chip {
     padding: 0.5rem 1rem;
     background: rgba(255, 255, 255, 0.9);
-    border: 1.5px solid rgba(226, 232, 240, 0.8);
+    border: 2px solid rgba(226, 232, 240, 0.8);
     border-radius: 8px;
     font-size: 0.85rem;
     font-family: 'Outfit', sans-serif;
     color: #374151;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s;
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.chip::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 0%;
+    top: 0;
+    left: -40px;
+    transform: skewX(45deg);
+    background-color: rgba(0, 84, 97, 0.1);
+    z-index: -1;
+    transition: all 0.3s;
 }
 
 .chip:hover:not(:disabled) {
-    border-color: #111827;
-    background: #f9fafb;
+    border-color: #005461;
+}
+
+.chip:hover:not(:disabled)::before {
+    width: 160%;
 }
 
 .historySection {
@@ -201,10 +242,13 @@
 }
 
 .historyTitle {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-size: 1rem;
+    font-weight: 400;
     color: #64748b;
     margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .historyItem {
@@ -215,12 +259,12 @@
 
 .userMessage {
     background: #f3f4f6;
-    border-left: 3px solid #3b82f6;
+    border-left: 3px solid #005461;
 }
 
 .aiMessage {
     background: #ecfdf5;
-    border-left: 3px solid #10b981;
+    border-left: 3px solid #4988c4;
 }
 
 .historyText {
@@ -242,4 +286,98 @@
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* ==================== DARK MODE STYLES ==================== */
+
+.darkMode {
+    background: rgba(15, 23, 42, 0.95);
+    border-left: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.darkMode .header {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.darkMode .title {
+    color: #e2e8f0;
+}
+
+.darkMode .expandBtn {
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    color: #94a3b8;
+}
+
+.darkMode .expandBtn:hover {
+    background: rgba(51, 65, 85, 0.9);
+    color: #e2e8f0;
+}
+
+.darkMode .closeBtn {
+    color: #94a3b8;
+}
+
+.darkMode .closeBtn:hover {
+    background: rgba(73, 136, 196, 0.1);
+    color: #e2e8f0;
+}
+
+.darkMode .textarea {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(51, 65, 85, 0.8);
+    color: #e2e8f0;
+}
+
+.darkMode .textarea:focus {
+    border-color: rgba(73, 136, 196, 0.5);
+}
+
+.darkMode .textarea::placeholder {
+    color: #64748b;
+}
+
+.darkMode .applyBtn {
+    border-color: #4988c4;
+    color: #4988c4;
+}
+
+.darkMode .applyBtn:hover:not(:disabled) {
+    color: white;
+}
+
+.darkMode .chip {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(51, 65, 85, 0.8);
+    color: #94a3b8;
+}
+
+.darkMode .chip:hover:not(:disabled) {
+    border-color: #4988c4;
+}
+
+.darkMode .historySection {
+    border-top-color: rgba(51, 65, 85, 0.6);
+}
+
+.darkMode .historyTitle {
+    color: #94a3b8;
+}
+
+.darkMode .userMessage {
+    background: rgba(30, 41, 59, 0.6);
+    border-left-color: #4988c4;
+}
+
+.darkMode .aiMessage {
+    background: rgba(16, 185, 129, 0.1);
+    border-left-color: #10b981;
+}
+
+.darkMode .historyText {
+    color: #e2e8f0;
+}
+
+.darkMode .timestamp {
+    color: #64748b;
 }

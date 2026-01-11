@@ -28,7 +28,7 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
       <div className={styles.container}>
         {/* Logo / Brand */}
         <div className={styles.brand}>
-          <h1 className={styles.logo}>Webber</h1>
+          <h1 className={styles.logo}>SKETCHY</h1>
           <p className={styles.tagline}>Draw it. Build it. Ship it.</p>
         </div>
 

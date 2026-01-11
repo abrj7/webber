@@ -59,34 +59,58 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   // Handle resize start
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
   }, []);
 
-  // Handle resize move
+  // Handle resize move - optimized with requestAnimationFrame
   useEffect(() => {
+    let animationFrameId: number | null = null;
+    
     const handleResize = (e: MouseEvent) => {
       if (!isDragging || !containerRef.current) return;
-
-      const container = containerRef.current;
-      const rect = container.getBoundingClientRect();
-      const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
-
-      // Clamp between 20% and 80%
-      setSplitPosition(Math.max(20, Math.min(80, newPosition)));
+      
+      // Cancel any pending animation frame
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      
+      // Use requestAnimationFrame for smooth updates
+      animationFrameId = requestAnimationFrame(() => {
+        if (!containerRef.current) return;
+        const container = containerRef.current;
+        const rect = container.getBoundingClientRect();
+        const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
+        
+        // Clamp between 20% and 80%
+        setSplitPosition(Math.max(20, Math.min(80, newPosition)));
+      });
     };
 
     const handleResizeEnd = () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       setIsDragging(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
     };
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleResize);
+      document.addEventListener('mousemove', handleResize, { passive: true });
       document.addEventListener('mouseup', handleResizeEnd);
     }
 
     return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       document.removeEventListener('mousemove', handleResize);
       document.removeEventListener('mouseup', handleResizeEnd);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
     };
   }, [isDragging]);
 
@@ -103,7 +127,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
 
   const handleGenerate = async (isRegenerate = false) => {
     if (isGenerating) return;
-
+    
     if (!editor) {
       alert("Canvas not ready yet");
       return;
@@ -150,32 +174,40 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
 
       // Serialize SVG element to string
       const serializer = new XMLSerializer();
-      const svgString = serializer.serializeToString(svg as Node);
-
-      // Convert SVG to PNG using canvas
+      let svgString = serializer.serializeToString(svg as Node);
+      
+      // Remove any external references that could cause tainted canvas
+      // Replace xlink:href with href and remove any external URLs
+      svgString = svgString.replace(/xlink:href/g, 'href');
+      
+      // Create the image with proper settings to avoid tainted canvas
       const img = new Image();
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(svgBlob);
+      img.crossOrigin = 'anonymous';
+      
+      // Use a data URL with properly encoded SVG
+      const encodedSvg = encodeURIComponent(svgString)
+        .replace(/'/g, '%27')
+        .replace(/"/g, '%22');
+      const dataUrl = `data:image/svg+xml,${encodedSvg}`;
 
       img.onload = async () => {
-        // Create a canvas to convert SVG to PNG
-        const canvas = document.createElement('canvas');
-        canvas.width = svgWidth;
-        canvas.height = svgHeight;
-        const ctx = canvas.getContext('2d');
+        try {
+          // Create a canvas to convert SVG to PNG
+          const canvas = document.createElement('canvas');
+          canvas.width = svgWidth;
+          canvas.height = svgHeight;
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx) {
+            // Fill white background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            
+            const base64Image = canvas.toDataURL('image/png');
+            
+            console.log("📸 Canvas exported! Sending to API...");
 
-        if (ctx) {
-          // Fill white background
-          ctx.fillStyle = 'white';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
-
-          const base64Image = canvas.toDataURL('image/png');
-
-          console.log("📸 Canvas exported! Sending to API...");
-
-          try {
-            // Send to API with style settings and existing HTML for regeneration
             const response = await fetch("/api/generate", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -189,6 +221,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
             });
 
             const data = await response.json();
+            console.log(`📦 AI Response received: HTML(${data.html?.length || 0} chars), CSS(${data.css?.length || 0} chars)`);
 
             if (data.error) {
               console.error("API Error:", data.error);
@@ -208,11 +241,8 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 </html>
               `;
               setGeneratedHtml(fullHtml);
-
-              // Auto-switch to split view if in canvas-only mode
-              if (viewMode === 'canvas') {
-                setViewMode('split');
-              }
+              
+              if (viewMode === 'canvas') setViewMode('split');
             }
           }
         } catch (err) {
@@ -231,7 +261,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
         alert("Failed to process wireframe.");
       };
 
-      img.src = url;
+      img.src = dataUrl;
 
     } catch (err) {
       console.error("Export error:", err);
@@ -245,6 +275,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     handleGenerate(true);
   };
 
+
   const handleExport = () => {
     if (!generatedHtml) {
       alert("No generated code to export yet!");
@@ -255,7 +286,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "webber-website.html";
+    a.download = "sketchy-website.html";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -455,9 +486,9 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
               className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''}`}
               style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
             >
-              <Tldraw
-                onMount={handleMount}
-                persistenceKey="webber-canvas"
+              <Tldraw 
+                onMount={handleMount} 
+                persistenceKey="sketchy-canvas"
               />
             </div>
           )}

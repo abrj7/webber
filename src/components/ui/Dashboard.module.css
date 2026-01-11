@@ -1,18 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Chewy&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Sniglet&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fuzzy+Bubbles:wght@400;700&display=swap');
 
 .app-container {
-  /* Scope variables locally to the container to avoid global pollution if possible, 
-     though typical CSS modules might need :global for root. 
-     Defining them here makes them available to children. */
   --ws-mint: #00c076;
   --ws-ink: #101010;
   --ws-slate: #5f6368;
   --ws-snow: #fbfbfd;
   --ws-border: #eeeeee;
+  --ws-teal: #005461;
+  --ws-blue: #4988c4;
   --radius-full: 100px;
   --radius-card: 28px;
 
@@ -20,10 +15,27 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: var(--ws-snow);
+  /* Mesh gradient background - EXACT match to landing page */
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(73, 136, 196, 0.2) 0%, transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(0, 84, 97, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(0, 84, 97, 0.15) 0%, transparent 50%);
   font-family: 'Outfit', sans-serif;
   color: var(--ws-ink);
   -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Dot Grid Overlay - matching landing page */
+.app-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 84, 97, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Integrated Sidebar Style */
@@ -35,6 +47,7 @@
   padding: 3rem 1.5rem;
   transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   position: relative;
+  z-index: 1;
 }
 
 .sidebar.collapsed {
@@ -64,9 +77,11 @@
 }
 
 .logo-text {
-  font-weight: 800;
-  font-size: 1.2rem;
-  letter-spacing: -0.04em;
+  font-family: 'Fuzzy Bubbles', cursive;
+  font-weight: 400;
+  font-size: 1.8rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .nav-group {
@@ -86,31 +101,34 @@
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  text-align: left;
 }
 
 .nav-link:hover {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.8);
   color: var(--ws-ink);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .nav-link.active {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
   color: var(--ws-ink);
   font-weight: 600;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
 }
 
-/* Main Scroll Area */
+/* Main Scroll Area - seamless with sidebar */
 .main-scroll {
   flex: 1;
   overflow-y: auto;
-  background: #ffffff;
-  border-radius: 40px 0 0 40px;
-  margin: 1rem 0 1rem 0;
+  background: transparent;
+  border-radius: 0;
+  margin: 0;
   padding: 4rem 6rem;
-  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.02);
   position: relative;
+  z-index: 1;
 }
 
 .header-nav {
@@ -120,24 +138,46 @@
   margin-bottom: 6rem;
 }
 
+/* Diagonal Swipe Buttons */
 .btn-action {
   display: flex;
   align-items: center;
   gap: 10px;
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--ws-ink);
-  padding: 10px 20px;
-  border-radius: 100px;
-  transition: all 0.3s;
-  background: var(--ws-snow);
-  border: 1px solid var(--ws-border);
+  color: var(--ws-teal);
+  padding: 12px 24px;
+  border-radius: 8px;
+  transition: all 0.5s;
+  background: transparent;
+  border: 2px solid var(--ws-teal);
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+}
+
+.btn-action::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 0%;
+  top: 0;
+  left: -40px;
+  transform: skewX(45deg);
+  background-color: var(--ws-teal);
+  z-index: -1;
+  transition: all 0.5s;
 }
 
 .btn-action:hover {
-  background: #ffffff;
-  border-color: var(--ws-ink);
+  color: white;
   transform: translateY(-2px);
+}
+
+.btn-action:hover::before {
+  width: 160%;
 }
 
 .avatar-circle {
@@ -153,14 +193,15 @@
   font-size: 0.9rem;
 }
 
-/* Page Content */
+/* Page Content - Playful Fuzzy+Bubbles:wght@400;700 font for greeting */
 .greeting-serif {
-  font-family: "Fuzzy Bubbles", system-ui;
-  font-size: 3.5rem;
+  font-family: 'Fuzzy Bubbles', cursive;
+  font-size: 4rem;
   font-weight: 400;
   font-style: normal;
   margin-bottom: 1rem;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .sub-greeting {
@@ -178,16 +219,17 @@
 .search-pill {
   display: flex;
   align-items: center;
-  background: var(--ws-snow);
+  background: rgba(255, 255, 255, 0.8);
   border: 1px solid var(--ws-border);
   border-radius: 100px;
   padding: 10px 14px 10px 28px;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
 }
 
 .search-pill:focus-within {
   background: white;
-  border-color: var(--ws-ink);
+  border-color: var(--ws-teal);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
   transform: scale(1.01);
 }
@@ -212,19 +254,22 @@
 
 /* Section Styles */
 .section-label {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-family: 'Fuzzy Bubbles', cursive;
+  font-size: 1rem;
+  font-weight: 400;
   letter-spacing: 0.15em;
-  color: #b1b1b1;
+  color: var(--ws-slate);
   text-transform: uppercase;
   margin-bottom: 2rem;
   display: block;
 }
 
 .recent-title {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-family: 'Fuzzy Bubbles', cursive;
+  font-size: 2.5rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 /* Template Grid */
@@ -236,7 +281,8 @@
 }
 
 .card-new {
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
   border-radius: var(--radius-card);
   padding: 3rem;
   border: 1px solid var(--ws-border);
@@ -251,13 +297,13 @@
 .card-new:hover {
   transform: translateY(-10px);
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.05);
-  border-color: var(--ws-mint);
+  border-color: var(--ws-teal);
 }
 
 .icon-wrap {
   width: 72px;
   height: 72px;
-  background: var(--ws-snow);
+  background: rgba(0, 84, 97, 0.05);
   border-radius: 22px;
   display: flex;
   align-items: center;
@@ -266,7 +312,7 @@
 }
 
 .card-new:hover .icon-wrap {
-  background: #e6faf2;
+  background: rgba(0, 84, 97, 0.1);
   transform: scale(1.1);
 }
 
@@ -278,7 +324,8 @@
 }
 
 .project-card {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
   border-radius: 36px;
   overflow: hidden;
   border: 1px solid var(--ws-border);
@@ -290,7 +337,7 @@
 .project-card:hover {
   transform: translateY(-15px) scale(1.01);
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.08);
-  border-color: var(--ws-ink);
+  border-color: var(--ws-teal);
 }
 
 .card-stage {
@@ -308,8 +355,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.02) 0%, transparent 50%);
+  background: radial-gradient(at 0% 0%, rgba(73, 136, 196, 0.1) 0%, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0, 84, 97, 0.05) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -363,10 +410,12 @@
 }
 
 .project-title {
-  font-size: 1.85rem;
-  font-weight: 800;
+  font-family: 'Fuzzy Bubbles', cursive;
+  font-size: 2rem;
+  font-weight: 400;
   margin-bottom: 1rem;
-  letter-spacing: -0.04em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .project-summary {
@@ -388,10 +437,10 @@
 .dot-indicator {
   width: 18px;
   height: 18px;
-  background: #e2e8f0;
+  background: var(--ws-teal);
   border-radius: 50%;
   border: 3px solid white;
-  box-shadow: 0 0 0 1px #e2e8f0;
+  box-shadow: 0 0 0 1px var(--ws-teal);
 }
 
 .date-label {

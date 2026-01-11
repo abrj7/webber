@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Fuzzy+Bubbles:wght@400;700&display=swap');
 
 .container {
   width: 100vw;
@@ -152,14 +152,13 @@
   transform: translateY(0) scale(0.98);
 }
 
-/* Secondary Buttons - Glassy with Teal Accents */
+/* Secondary Buttons - Diagonal Swipe Effect */
 .secondaryBtn {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: transparent;
+  border: 2px solid #005461;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
   font-family: 'Outfit', sans-serif;
   color: #005461;
@@ -167,24 +166,43 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s;
+  text-transform: uppercase;
+}
+
+.secondaryBtn::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 0%;
+  top: 0;
+  left: -40px;
+  transform: skewX(45deg);
+  background-color: #005461;
+  z-index: -1;
+  transition: all 0.5s;
+}
+
+.secondaryBtn:hover {
+  color: white;
+  transform: translateY(-2px);
+}
+
+.secondaryBtn:hover::before {
+  width: 160%;
 }
 
 .secondaryBtn svg {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  z-index: 1;
 }
 
-.secondaryBtn:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 84, 97, 0.4);
-  color: #003d47;
-  box-shadow:
-    0 4px 14px -3px rgba(0, 84, 97, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-  transform: translateY(-2px);
+.secondaryBtn span {
+  position: relative;
+  z-index: 1;
 }
 
 .secondaryBtn:hover svg {
@@ -195,11 +213,11 @@
   transform: translateY(0) scale(0.98);
 }
 
-/* Generate Button - Specific Gradient */
+/* Generate Button - Diagonal Swipe with Gradient */
 .generateBtn {
-  background: linear-gradient(135deg, #4988c4 0%, #005461 100%);
-  color: white;
-  border: none;
+  background: transparent;
+  border: 2px solid #4988c4;
+  color: #4988c4;
   padding: 0.6rem 1.25rem;
   border-radius: 8px;
   font-weight: 600;
@@ -209,31 +227,44 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:
-    0 4px 14px -3px rgba(0, 84, 97, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.2);
   position: relative;
   overflow: hidden;
+  transition: all 0.5s;
+  text-transform: uppercase;
 }
 
 .generateBtn::before {
-  content: '';
+  content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%, transparent 100%);
-  pointer-events: none;
+  height: 100%;
+  width: 0%;
+  top: 0;
+  left: -40px;
+  transform: skewX(45deg);
+  background: linear-gradient(135deg, #4988c4 0%, #005461 100%);
+  z-index: -1;
+  transition: all 0.5s;
+}
+
+.generateBtn:hover {
+  color: white;
+  border-color: #005461;
+  transform: translateY(-2px);
+}
+
+.generateBtn:hover::before {
+  width: 160%;
 }
 
 .generateBtn svg {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  z-index: 1;
 }
 
-.generateBtn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    0 8px 20px -4px rgba(0, 84, 97, 0.5),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+.generateBtn span {
+  position: relative;
+  z-index: 1;
 }
 
 .generateBtn:hover svg {
@@ -256,7 +287,6 @@
   flex: 1;
   display: flex;
   flex-direction: row;
-  /* Vertical split (side by side) */
   min-width: 0;
 }
 
@@ -264,7 +294,7 @@
   flex: 1;
   min-width: 0;
   position: relative;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* No transition for instant resize response */
 }
 
 .canvasSection.fullWidth {
@@ -283,7 +313,7 @@
   display: flex;
   flex-direction: column;
   background: white;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* No transition for instant resize response */
 }
 
 .previewSection.fullWidth {
@@ -297,6 +327,9 @@
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   font-size: 0.875rem;
   font-weight: 600;
+  font-family: 'Fuzzy Bubbles', cursive;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #005461;
   display: flex;
   align-items: center;
@@ -341,6 +374,10 @@
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #e2e8f0;
   font-weight: 600;
+  font-family: 'Fuzzy Bubbles', cursive;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #1e293b;
 }
 
@@ -373,35 +410,58 @@
 
 .styleBtn {
   padding: 0.5rem 0.875rem;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #e2e8f0;
   background: white;
   border-radius: 6px;
   font-size: 0.8125rem;
   font-weight: 500;
   color: #475569;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.styleBtn::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 0%;
+  top: 0;
+  left: -40px;
+  transform: skewX(45deg);
+  background-color: #005461;
+  z-index: -1;
+  transition: all 0.3s;
 }
 
 .styleBtn:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: #005461;
+  color: white;
+}
+
+.styleBtn:hover::before {
+  width: 160%;
 }
 
 .activeStyleBtn {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: linear-gradient(135deg, #4988c4 0%, #005461 100%);
+  border-color: #005461;
   color: white;
 }
 
 .activeStyleBtn:hover {
-  background: #2563eb;
   color: white;
 }
 
+.activeStyleBtn::before {
+  display: none;
+}
+
 .activeIconBtn {
-  background: #eff6ff;
-  color: #3b82f6;
+  background: rgba(0, 84, 97, 0.1);
+  color: #005461;
+  border-color: rgba(0, 84, 97, 0.3);
 }
 
 .colorPicker {
@@ -431,7 +491,7 @@
 
 .colorValue {
   font-size: 0.8125rem;
-  font-family: monospace;
+  font-family: 'Fuzzy Bubbles', cursive;
   color: #64748b;
 }
 
@@ -484,6 +544,99 @@
 .resizeHandle:hover .resizeHandleBar,
 .resizeHandle.resizing .resizeHandleBar {
   background: rgba(0, 84, 97, 0.6);
+}
+
+/* ==================== DOWNLOAD BUTTON ==================== */
+
+.downloadBtn {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgb(27, 27, 27);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition-duration: .3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.11);
+}
+
+.downloadBtn .svgIcon {
+  fill: rgb(214, 178, 255);
+}
+
+.downloadBtn .icon2 {
+  width: 18px;
+  height: 5px;
+  border-bottom: 2px solid rgb(182, 143, 255);
+  border-left: 2px solid rgb(182, 143, 255);
+  border-right: 2px solid rgb(182, 143, 255);
+}
+
+.downloadBtn .tooltip {
+  position: absolute;
+  right: -105px;
+  opacity: 0;
+  background-color: rgb(12, 12, 12);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition-duration: .2s;
+  pointer-events: none;
+  letter-spacing: 0.5px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+}
+
+.downloadBtn .tooltip::before {
+  position: absolute;
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-color: rgb(12, 12, 12);
+  background-size: 1000%;
+  background-position: center;
+  transform: rotate(45deg);
+  left: -5%;
+  transition-duration: .3s;
+}
+
+.downloadBtn:hover .tooltip {
+  opacity: 1;
+  transition-duration: .3s;
+}
+
+.downloadBtn:hover {
+  background-color: rgb(150, 94, 255);
+  transition-duration: .3s;
+}
+
+.downloadBtn:hover .icon2 {
+  border-bottom: 2px solid rgb(235, 235, 235);
+  border-left: 2px solid rgb(235, 235, 235);
+  border-right: 2px solid rgb(235, 235, 235);
+}
+
+.downloadBtn:hover .svgIcon {
+  fill: rgb(255, 255, 255);
+  animation: slide-in-top 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes slide-in-top {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
 }
 
 /* ==================== DARK MODE STYLES ==================== */
@@ -544,16 +697,27 @@
 
 /* Dark Mode Secondary Buttons */
 .darkMode .secondaryBtn {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(51, 65, 85, 0.8);
-  color: #94a3b8;
+  background: transparent;
+  border: 2px solid #4988c4;
+  color: #4988c4;
+}
+
+.darkMode .secondaryBtn::before {
+  background-color: #4988c4;
 }
 
 .darkMode .secondaryBtn:hover {
-  background: rgba(51, 65, 85, 0.9);
-  border-color: rgba(73, 136, 196, 0.5);
-  color: #e2e8f0;
-  box-shadow: 0 4px 14px -3px rgba(0, 0, 0, 0.4);
+  color: white;
+}
+
+/* Dark Mode Generate Button */
+.darkMode .generateBtn {
+  border-color: #4988c4;
+  color: #4988c4;
+}
+
+.darkMode .generateBtn:hover {
+  color: white;
 }
 
 /* Dark Mode Dark Mode Toggle */
@@ -585,17 +749,21 @@
 
 .darkMode .styleBtn {
   background: #1e293b;
-  border: 1px solid #334155;
+  border: 2px solid #334155;
   color: #94a3b8;
+}
+
+.darkMode .styleBtn::before {
+  background-color: #4988c4;
 }
 
 .darkMode .styleBtn:hover {
   border-color: #4988c4;
-  color: #4988c4;
+  color: white;
 }
 
 .darkMode .activeStyleBtn {
-  background: #4988c4;
+  background: linear-gradient(135deg, #4988c4 0%, #005461 100%);
   border-color: #4988c4;
   color: white;
 }
