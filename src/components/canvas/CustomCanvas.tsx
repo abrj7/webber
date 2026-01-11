@@ -22,7 +22,8 @@ type StylePreset = typeof STYLE_PRESETS[number]['id'];
 
 export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   const [isChatCollapsed, setIsChatCollapsed] = useState(true); // Collapsed by default
-  const [viewMode, setViewMode] = useState<'canvas' | 'split' | 'preview'>('split');
+  const [viewMode, setViewMode] = useState<'canvas' | 'split' | 'preview'>('canvas');
+  const [showWelcome, setShowWelcome] = useState(true); // Welcome overlay state
   const [generatedHtml, setGeneratedHtml] = useState("");
   const [editor, setEditor] = useState<Editor | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -39,14 +40,6 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     layout: string;
     elements: string[];
   } | null>(null);
-
-  // Deploy state
-  const [showDeployModal, setShowDeployModal] = useState(false);
-  const [deployName, setDeployName] = useState("");
-  const [pushToGitHub, setPushToGitHub] = useState(false);
-  const [isDeploying, setIsDeploying] = useState(false);
-  const [deployedUrl, setDeployedUrl] = useState<string | null>(null);
-  const [githubUrl, setGithubUrl] = useState<string | null>(null);
 
   // Store for loading state
   const { isGenerating, setGenerating } = useStore();
@@ -68,22 +61,22 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   // Handle resize move - optimized with requestAnimationFrame
   useEffect(() => {
     let animationFrameId: number | null = null;
-    
+
     const handleResize = (e: MouseEvent) => {
       if (!isDragging || !containerRef.current) return;
-      
+
       // Cancel any pending animation frame
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
-      
+
       // Use requestAnimationFrame for smooth updates
       animationFrameId = requestAnimationFrame(() => {
         if (!containerRef.current) return;
         const container = containerRef.current;
         const rect = container.getBoundingClientRect();
         const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
-        
+
         // Clamp between 20% and 80%
         setSplitPosition(Math.max(20, Math.min(80, newPosition)));
       });
@@ -116,6 +109,11 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
 
   const handleMount = useCallback((editorInstance: Editor) => {
     setEditor(editorInstance);
+
+    // Listen for any user action to dismiss welcome overlay
+    editorInstance.store.listen(() => {
+      setShowWelcome(false);
+    }, { source: 'user', scope: 'document' });
   }, []);
 
   // Update tldraw dark mode when isDarkMode changes
@@ -127,7 +125,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
 
   const handleGenerate = async (isRegenerate = false) => {
     if (isGenerating) return;
-    
+
     if (!editor) {
       alert("Canvas not ready yet");
       return;
@@ -175,15 +173,15 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
       // Serialize SVG element to string
       const serializer = new XMLSerializer();
       let svgString = serializer.serializeToString(svg as Node);
-      
+
       // Remove any external references that could cause tainted canvas
       // Replace xlink:href with href and remove any external URLs
       svgString = svgString.replace(/xlink:href/g, 'href');
-      
+
       // Create the image with proper settings to avoid tainted canvas
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       // Use a data URL with properly encoded SVG
       const encodedSvg = encodeURIComponent(svgString)
         .replace(/'/g, '%27')
@@ -197,15 +195,15 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
           canvas.width = svgWidth;
           canvas.height = svgHeight;
           const ctx = canvas.getContext('2d');
-          
+
           if (ctx) {
             // Fill white background
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
-            
+
             const base64Image = canvas.toDataURL('image/png');
-            
+
             console.log("📸 Canvas exported! Sending to API...");
 
             const response = await fetch("/api/generate", {
@@ -241,7 +239,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 </html>
               `;
               setGeneratedHtml(fullHtml);
-              
+
               if (viewMode === 'canvas') setViewMode('split');
             }
           }
@@ -344,9 +342,6 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
           <button onClick={onBack} className={styles.iconBtn} title="Back to dashboard">
             <ArrowLeft size={20} />
           </button>
-          <button className={styles.iconBtn} title="Menu">
-            <Menu size={20} />
-          </button>
           <button
             className={`${styles.iconBtn} ${showSettings ? styles.activeIconBtn : ''}`}
             title="Style Settings"
@@ -387,35 +382,32 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
         </div>
 
         <div className={styles.rightSection}>
-          <button
-            className={styles.secondaryBtn}
-            onClick={handleRegenerate}
-            title="Regenerate"
-            disabled={isGenerating}
-          >
-            <RotateCcw size={16} />
-            <span>Regenerate</span>
-          </button>
+          <div className={styles.actionTabs}>
+            <button
+              className={styles.secondaryBtn}
+              onClick={handleRegenerate}
+              title="Regenerate"
+              disabled={isGenerating}
+            >
+              <RotateCcw size={14} />
+              <span>Regenerate</span>
+            </button>
 
-          <button className={styles.secondaryBtn} onClick={handleExport} title="Export HTML">
-            <Download size={16} />
-            <span>Export</span>
-          </button>
+            <button className={styles.secondaryBtn} onClick={handleExport} title="Export HTML">
+              <Download size={14} />
+              <span>Export</span>
+            </button>
 
-          <button className={styles.deployBtn} onClick={handleDeploy} title="Deploy to Vercel">
-            <Rocket size={16} />
-            <span>Deploy</span>
-          </button>
-
-          <button
-            className={styles.generateBtn}
-            onClick={() => handleGenerate()}
-            disabled={isGenerating}
-            style={{ opacity: isGenerating ? 0.7 : 1 }}
-          >
-            {isGenerating ? <Loader2 size={16} className={styles.spinning} /> : <Send size={16} />}
-            <span>{isGenerating ? "Generating..." : "Generate"}</span>
-          </button>
+            <button
+              className={styles.generateBtn}
+              onClick={() => handleGenerate()}
+              disabled={isGenerating}
+              style={{ opacity: isGenerating ? 0.7 : 1 }}
+            >
+              {isGenerating ? <Loader2 size={14} className={styles.spinning} /> : <Send size={14} />}
+              <span>{isGenerating ? "Generating..." : "Generate"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -486,10 +478,57 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
               className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''}`}
               style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
             >
-              <Tldraw 
-                onMount={handleMount} 
+              <Tldraw
+                onMount={handleMount}
                 persistenceKey="sketchy-canvas"
               />
+
+              {/* Welcome Overlay - disappears on first action */}
+              {showWelcome && (
+                <div className={styles.welcomeOverlay} onClick={() => setShowWelcome(false)}>
+                  {/* Arrow pointing to menu/settings */}
+                  <div className={styles.hintTopLeft}>
+                    <svg className={styles.arrowCurved} width="60" height="50" viewBox="0 0 60 50">
+                      <path d="M50 45 Q30 45 20 25 Q15 15 5 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M5 10 L10 15 M5 10 L12 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    <span className={styles.hintText}>Export, preferences, languages, ...</span>
+                  </div>
+
+                  {/* Arrow pointing down to toolbar */}
+                  <div className={styles.hintTopCenter}>
+                    <span className={styles.hintTextMove}>To move canvas, use the <kbd>hand tool</kbd>  !</span>
+                    <svg className={styles.arrowUp} width="40" height="60" viewBox="0 0 40 60">
+                      <path d="M20 0 L20 50" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M20 0 L15 8 M20 0 L25 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+
+                  {/* Pick a tool hint pointing down */}
+                  <div className={styles.hintToolPicker}>
+                    <svg className={styles.arrowDown} width="40" height="60" viewBox="0 0 40 60">
+                      <path d="M20 60 L20 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M20 60 L15 52 M20 60 L25 52" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    <span className={styles.hintText}>Pick a tool <br />& Start drawing :)</span>
+                  </div>
+
+                  {/* Center branding */}
+                  <div className={styles.welcomeCenter}>
+                    <h1 className={styles.welcomeLogo}>SKETCHY</h1>
+                    <p className={styles.welcomeSubtext}>Draw it. Build it. Ship it.</p>
+                  </div>
+
+                  {/* Squiggly arrow pointing to AI sidebar */}
+                  <div className={styles.hintSidebar}>
+                    <span className={styles.hintTextSidebar}>Make your ideas<br /><strong>BETTER</strong> with Gemini ;)</span>
+                    <svg className={styles.arrowSquiggly} width="190" height="40" viewBox="0 0 190 40">
+                      <path d="M0 20 Q15 8 30 20 Q45 32 60 20 Q75 8 90 20 Q105 32 120 20 Q135 8 150 20 Q165 32 175 20 L185 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M185 20 L178 14 M185 20 L178 26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

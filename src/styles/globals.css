@@ -7,8 +7,8 @@
   --accent-blue: #4988C4;
   --accent-purple: #a855f7;
   --canvas-bg: #f8f9fa;
-  --dot-color: rgba(0, 84, 97, 0.1);
-  
+  --dot-color: rgba(0, 84, 97, 0.18);
+
   /* Unified playful font */
   --font-playful: 'Fuzzy Bubbles', cursive;
   --font-body: 'Outfit', sans-serif;
@@ -32,7 +32,7 @@ body {
 /* Mesh Gradient Background - unified across the app */
 .mesh-background {
   background-color: #ffffff;
-  background-image: 
+  background-image:
     radial-gradient(circle at 50% 50%, rgba(73, 136, 196, 0.2) 0%, transparent 60%),
     radial-gradient(circle at 100% 0%, rgba(0, 84, 97, 0.2) 0%, transparent 50%),
     radial-gradient(circle at 0% 100%, rgba(0, 84, 97, 0.15) 0%, transparent 50%);
@@ -49,6 +49,7 @@ body {
   background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
   background-size: 24px 24px;
   pointer-events: none;
+  z-index: 1;
 }
 
 /* ==================== UNIFIED BUTTON STYLES ==================== */
@@ -189,6 +190,7 @@ body {
     transform: translateY(-10px);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0px);
     opacity: 1;

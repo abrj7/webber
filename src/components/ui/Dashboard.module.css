@@ -2,7 +2,7 @@
 
 .app-container {
   --ws-mint: #00c076;
-  --ws-ink: #101010;
+  --ws-ink: #005461;
   --ws-slate: #5f6368;
   --ws-snow: #fbfbfd;
   --ws-border: #eeeeee;
@@ -17,7 +17,7 @@
   overflow: hidden;
   /* Mesh gradient background - EXACT match to landing page */
   background-color: #ffffff;
-  background-image: 
+  background-image:
     radial-gradient(circle at 50% 50%, rgba(73, 136, 196, 0.2) 0%, transparent 60%),
     radial-gradient(circle at 100% 0%, rgba(0, 84, 97, 0.2) 0%, transparent 50%),
     radial-gradient(circle at 0% 100%, rgba(0, 84, 97, 0.15) 0%, transparent 50%);
@@ -66,7 +66,7 @@
 .logo-square {
   width: 42px;
   height: 42px;
-  background: var(--ws-ink);
+  background: var(--ws-teal);
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -183,7 +183,7 @@
 .avatar-circle {
   width: 48px;
   height: 48px;
-  background: var(--ws-ink);
+  background: var(--ws-teal);
   color: white;
   border-radius: 50%;
   display: flex;

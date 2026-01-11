@@ -140,7 +140,7 @@ export default function Dashboard({ onCreateNew, onHome }: DashboardProps) {
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
             <h2 className={styles['recent-title']}>Recent Work</h2>
-            <a href="#" style={{ fontWeight: 700, color: '#10b981' }}>View All</a>
+            <a href="#" style={{ fontWeight: 700, color: '#005461' }}>View All</a>
           </div>
 
           <div className={styles['grid-projects']}>
