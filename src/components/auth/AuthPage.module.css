@@ -202,3 +202,53 @@
 .switchBtn:hover {
   color: #4988C4;
 }
+
+/* Error Message */
+.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* Password Hint */
+.passwordHint {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: -0.5rem 0 0.5rem 0;
+}
+
+/* Loading Spinner */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled States */
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.input:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.oauthBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
