@@ -55,6 +55,43 @@ export async function signInWithGoogle(): Promise<User | null> {
 }
 
 export async function signInWithGitHub(): Promise<User | null> {
-  // TODO: Implement GitHub OAuth
-  throw new Error("Not implemented - connect to auth provider");
+  const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+  if (!clientId) {
+    throw new Error("GitHub OAuth not configured");
+  }
+
+  // Redirect to GitHub OAuth
+  const redirectUri = `${window.location.origin}/api/auth/github/callback`;
+  const scope = "user:email repo"; // Request repo access for GitHub integration
+  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+
+  window.location.href = githubAuthUrl;
+  return null;
+}
+
+// Helper function to get GitHub token from cookies
+export function getGitHubToken(): string | null {
+  if (typeof document === "undefined") return null;
+
+  const cookies = document.cookie.split(";");
+  const tokenCookie = cookies.find((c) => c.trim().startsWith("github_token="));
+
+  if (!tokenCookie) return null;
+  return tokenCookie.split("=")[1];
+}
+
+// Helper function to get GitHub user from cookies
+export function getGitHubUser(): { id: number; login: string; name: string; avatar_url: string } | null {
+  if (typeof document === "undefined") return null;
+
+  const cookies = document.cookie.split(";");
+  const userCookie = cookies.find((c) => c.trim().startsWith("github_user="));
+
+  if (!userCookie) return null;
+
+  try {
+    return JSON.parse(decodeURIComponent(userCookie.split("=")[1]));
+  } catch {
+    return null;
+  }
 }
