@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import styles from "./CustomCanvas.module.css";
-import { Menu, ArrowLeft, Send, RotateCcw, Download, Loader2, Settings, X, Sun, Moon } from "lucide-react";
+import { Menu, ArrowLeft, Send, RotateCcw, Download, Loader2, Settings, X, Sun, Moon, History, Clock } from "lucide-react";
 import { Tldraw, Editor } from "tldraw";
 import "tldraw/tldraw.css";
 import ChatPanel from "./ChatPanel";
@@ -36,6 +36,11 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
   const [currentProjectName, setCurrentProjectName] = useState(projectName);
+  const [showHistory, setShowHistory] = useState(false);
+  const [versions, setVersions] = useState<Array<{ _id: string; versionNumber: number; createdAt: string }>>([]);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false);
+  const [viewingVersion, setViewingVersion] = useState<{ _id: string; versionNumber: number; createdAt: string; generatedHtml: string } | null>(null);
+  const [liveGeneratedHtml, setLiveGeneratedHtml] = useState("");
 
   // Style customization state
   const [websiteStyle, setWebsiteStyle] = useState<StylePreset>('modern');
@@ -147,7 +152,18 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
         .then(data => {
           if (data.project?.canvasData?.records) {
             // Load the records into the store
-            const records = data.project.canvasData.records;
+            // Sanitize records to avoid tldraw validation errors (undefined fields)
+            const records = data.project.canvasData.records.map((record: Record<string, unknown>) => {
+              const sanitized: Record<string, unknown> = {
+                ...record,
+                meta: record.meta ?? {},
+              };
+              // Handle instance record's stylesForNextShape
+              if (record.typeName === 'instance' && record.stylesForNextShape === undefined) {
+                sanitized.stylesForNextShape = {};
+              }
+              return sanitized;
+            });
             editor.store.put(records);
           }
           if (data.project?.generatedHtml) {
@@ -198,6 +214,130 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
     setShowNameModal(false);
     onBack();
   };
+
+  // Fetch version history
+  const fetchVersions = async () => {
+    if (!projectId) return;
+
+    setIsLoadingVersions(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/versions`);
+      const data = await res.json();
+      console.log("Fetched versions:", data.versions);
+      setVersions(data.versions || []);
+    } catch (error) {
+      console.error("Failed to fetch versions:", error);
+    } finally {
+      setIsLoadingVersions(false);
+    }
+  };
+
+  // Preview a version (shows version's HTML in preview pane)
+  const previewVersion = async (version: { _id: string; versionNumber: number; createdAt: string }) => {
+    console.log("Previewing version:", version._id);
+    if (!projectId || !version._id) {
+      console.error("Missing projectId or version._id");
+      return;
+    }
+
+    try {
+      // Fetch the version's full data
+      const res = await fetch(`/api/projects/${projectId}/versions/${version._id}`);
+      const data = await res.json();
+
+      if (data.version) {
+        // Store current live HTML before switching to version preview
+        if (!viewingVersion) {
+          setLiveGeneratedHtml(generatedHtml);
+        }
+
+        // Set the viewing version with its HTML
+        setViewingVersion({
+          _id: version._id,
+          versionNumber: version.versionNumber,
+          createdAt: version.createdAt,
+          generatedHtml: data.version.generatedHtml || "",
+        });
+
+        // Show the version's HTML in preview
+        setGeneratedHtml(data.version.generatedHtml || "");
+        setShowHistory(false);
+        console.log("📺 Showing version preview:", version.versionNumber);
+      }
+    } catch (error) {
+      console.error("Failed to preview version:", error);
+      alert("Failed to load version preview");
+    }
+  };
+
+  // Confirm and restore the currently viewing version
+  const confirmRestore = async () => {
+    if (!viewingVersion || !projectId || !editor) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/versions/${viewingVersion._id}`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (data.project) {
+        console.log("✅ Version restored to database!");
+
+        // Load the restored canvas data directly instead of page reload
+        if (data.project.canvasData?.records) {
+          // Clear existing shapes and load restored ones
+          const allShapeIds = editor.getCurrentPageShapeIds();
+          if (allShapeIds.size > 0) {
+            editor.deleteShapes(Array.from(allShapeIds));
+          }
+
+          // Sanitize and load records
+          const records = data.project.canvasData.records.map((record: Record<string, unknown>) => {
+            const sanitized: Record<string, unknown> = {
+              ...record,
+              meta: record.meta ?? {},
+            };
+            if (record.typeName === 'instance' && record.stylesForNextShape === undefined) {
+              sanitized.stylesForNextShape = {};
+            }
+            return sanitized;
+          });
+          editor.store.put(records);
+        }
+
+        // Update the HTML preview with restored version
+        if (data.project.generatedHtml) {
+          setGeneratedHtml(data.project.generatedHtml);
+        }
+
+        // Clear version preview state (we're now "live" with restored data)
+        setViewingVersion(null);
+        setLiveGeneratedHtml(data.project.generatedHtml || "");
+
+        // Refresh version list
+        fetchVersions();
+
+        console.log("✅ Canvas and preview updated with restored version!");
+      }
+    } catch (error) {
+      console.error("Failed to restore version:", error);
+      alert("Failed to restore version");
+    }
+  };
+
+  // Exit version preview, go back to live
+  const exitVersionPreview = () => {
+    setGeneratedHtml(liveGeneratedHtml);
+    setViewingVersion(null);
+    console.log("↩️ Back to live preview");
+  };
+
+  // Load versions when history panel opens
+  useEffect(() => {
+    if (showHistory && projectId) {
+      fetchVersions();
+    }
+  }, [showHistory, projectId]);
 
   // Update tldraw dark mode when isDarkMode changes
   useEffect(() => {
@@ -317,6 +457,28 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               `;
               setGeneratedHtml(fullHtml);
 
+              // Save version after successful generation
+              if (projectId) {
+                try {
+                  const allRecords = editor?.store.allRecords() || [];
+                  await fetch(`/api/projects/${projectId}/versions`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      canvasData: { records: allRecords },
+                      generatedHtml: fullHtml,
+                    }),
+                  });
+                  console.log("📸 Version saved!");
+                  // Refresh version list if panel is open
+                  if (showHistory) {
+                    fetchVersions();
+                  }
+                } catch (versionErr) {
+                  console.error("Failed to save version:", versionErr);
+                }
+              }
+
               // Auto-switch to split view if in canvas-only mode
               if (viewMode === 'canvas') {
                 setViewMode('split');
@@ -419,6 +581,15 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
 
         <div className={styles.rightSection}>
           <button
+            className={`${styles.secondaryBtn} ${showHistory ? styles.activeBtn : ''}`}
+            onClick={() => setShowHistory(!showHistory)}
+            title="Version History"
+          >
+            <History size={16} />
+            <span>History</span>
+          </button>
+
+          <button
             className={styles.secondaryBtn}
             onClick={handleRegenerate}
             title="Regenerate"
@@ -503,6 +674,51 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
         </div>
       )}
 
+      {/* Version History Panel */}
+      {showHistory && (
+        <div className={styles.settingsPanel}>
+          <div className={styles.settingsHeader}>
+            <span>Version History</span>
+            <button className={styles.iconBtn} onClick={() => setShowHistory(false)}>
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className={styles.settingsContent}>
+            {isLoadingVersions ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+                <Loader2 size={24} className={styles.spinning} />
+              </div>
+            ) : versions.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                <History size={32} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>No versions yet</p>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem' }}>Click Generate to create a version</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {versions.map((version) => (
+                  <button
+                    key={version._id}
+                    className={styles.versionItem}
+                    onClick={() => previewVersion(version)}
+                    title="Click to preview this version"
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Clock size={14} />
+                      <span style={{ fontWeight: 600 }}>Version {version.versionNumber}</span>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      {new Date(version.createdAt).toLocaleString()}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <div className={styles.mainArea}>
         <div className={styles.splitContainer} ref={containerRef}>
@@ -535,9 +751,39 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               className={`${styles.previewSection} ${viewMode === 'preview' ? styles.fullWidth : ''}`}
               style={viewMode === 'split' ? { width: `${100 - splitPosition}%`, flex: 'none' } : undefined}
             >
-              <div className={styles.previewHeader}>
-                <span>Live Preview</span>
-              </div>
+              {viewingVersion ? (
+                <div className={styles.versionBanner}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Clock size={16} />
+                    <span>
+                      <strong>Viewing Version {viewingVersion.versionNumber}</strong>
+                      <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.8125rem' }}>
+                        {new Date(viewingVersion.createdAt).toLocaleString()}
+                      </span>
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={exitVersionPreview}
+                      className={styles.secondaryBtn}
+                      style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                    >
+                      Back to Live
+                    </button>
+                    <button
+                      onClick={confirmRestore}
+                      className={styles.generateBtn}
+                      style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                    >
+                      Restore this version
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.previewHeader}>
+                  <span>Live Preview</span>
+                </div>
+              )}
               <iframe
                 srcDoc={generatedHtml || `
                   <html>

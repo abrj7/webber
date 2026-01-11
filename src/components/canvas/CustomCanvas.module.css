@@ -316,8 +316,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Settings Panel */
@@ -428,6 +433,63 @@
   font-size: 0.8125rem;
   font-family: monospace;
   color: #64748b;
+}
+
+/* Active button state (for History toggle) */
+.activeBtn {
+  background: rgba(73, 136, 196, 0.15);
+  border-color: rgba(73, 136, 196, 0.4);
+  color: #005461;
+}
+
+/* Version item in history panel */
+.versionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+}
+
+.versionItem:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  transform: translateX(4px);
+}
+
+.darkMode .versionItem {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.darkMode .versionItem:hover {
+  background: #334155;
+  border-color: #4988c4;
+}
+
+/* Version Preview Banner */
+.versionBanner {
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-bottom: 1px solid #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #92400e;
+}
+
+.darkMode .versionBanner {
+  background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+  border-bottom: 1px solid #b45309;
+  color: #fde68a;
 }
 
 /* Dark Mode Toggle Button */
