@@ -514,7 +514,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
             >
               <Tldraw
                 onMount={handleMount}
-                persistenceKey="webber-canvas"
+                persistenceKey={projectId ? `webber-project-${projectId}` : undefined}
               />
             </div>
           )}
