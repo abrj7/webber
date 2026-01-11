@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChevronRight, Send, Loader2 } from "lucide-react";
+import { X, ChevronLeft, Send, Loader2 } from "lucide-react";
 import styles from "./ChatPanel.module.css";
 
 interface ChatPanelProps {
@@ -191,7 +191,7 @@ export default function ChatPanel({
         <aside className={`${styles.panel} ${isCollapsed ? styles.collapsed : ''} ${isDarkMode ? styles.darkMode : ''}`}>
             {isCollapsed ? (
                 <button className={styles.expandBtn} onClick={onToggle} title="Expand chat">
-                    <ChevronRight size={20} />
+                    <ChevronLeft size={20} />
                 </button>
             ) : (
                 <>

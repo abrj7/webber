@@ -15,7 +15,11 @@ import {
   Moon, 
   Rocket, 
   History, 
-  Clock 
+  Clock,
+  Layout,
+  Columns,
+  Eye,
+  RotateCw
 } from "lucide-react";
 import { Tldraw, Editor } from "tldraw";
 import "tldraw/tldraw.css";
@@ -626,37 +630,54 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
           <button onClick={handleBack} className={styles.iconBtn} title="Back to dashboard">
             <ArrowLeft size={20} />
           </button>
-          <button className={styles.iconBtn} title="Menu">
-            <Menu size={20} />
-          </button>
-          <button
-            className={`${styles.iconBtn} ${showSettings ? styles.activeIconBtn : ''}`}
-            title="Style Settings"
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            <Settings size={20} />
-          </button>
+          <div className={styles.actionTabs}>
+            <button
+              className={`${styles.secondaryBtn} ${showSettings ? styles.activeBtn : ''}`}
+              title="Style Settings"
+              onClick={() => {
+                setShowSettings(!showSettings);
+                setShowHistory(false);
+              }}
+            >
+              <Settings size={14} />
+              <span>Settings</span>
+            </button>
+            <button
+              className={`${styles.secondaryBtn} ${showHistory ? styles.activeBtn : ''}`}
+              onClick={() => {
+                setShowHistory(!showHistory);
+                setShowSettings(false);
+              }}
+              title="Version History"
+            >
+              <History size={14} />
+              <span>History</span>
+            </button>
+          </div>
         </div>
 
         <div className={styles.centerSection}>
-          <div className={styles.viewTabs}>
+          <div className={styles.actionTabs}>
             <button
-              className={`${styles.tabBtn} ${viewMode === 'canvas' ? styles.activeTab : ''}`}
+              className={`${styles.secondaryBtn} ${viewMode === 'canvas' ? styles.activeBtn : ''}`}
               onClick={() => setViewMode('canvas')}
             >
-              Canvas
+              <Layout size={14} />
+              <span>Canvas</span>
             </button>
             <button
-              className={`${styles.tabBtn} ${viewMode === 'split' ? styles.activeTab : ''}`}
+              className={`${styles.secondaryBtn} ${viewMode === 'split' ? styles.activeBtn : ''}`}
               onClick={() => setViewMode('split')}
             >
-              Split View
+              <Columns size={14} />
+              <span>Split View</span>
             </button>
             <button
-              className={`${styles.tabBtn} ${viewMode === 'preview' ? styles.activeTab : ''}`}
+              className={`${styles.secondaryBtn} ${viewMode === 'preview' ? styles.activeBtn : ''}`}
               onClick={() => setViewMode('preview')}
             >
-              Preview
+              <Eye size={14} />
+              <span>Preview</span>
             </button>
             <button
               className={styles.darkModeToggle}
@@ -669,34 +690,20 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
         </div>
 
         <div className={styles.rightSection}>
-          <div className={styles.actionTabs}>
-            <button
-              className={`${styles.secondaryBtn} ${showHistory ? styles.activeBtn : ''}`}
-              onClick={() => setShowHistory(!showHistory)}
-              title="Version History"
-            >
-              <History size={14} />
-              <span>History</span>
-            </button>
+          <button className={styles.deployBtn} onClick={handleDeploy} title="Deploy to Vercel">
+            <Rocket size={14} />
+            <span>Deploy</span>
+          </button>
 
+          <div className={styles.actionTabs}>
             <button
               className={styles.secondaryBtn}
               onClick={handleRegenerate}
               title="Regenerate"
               disabled={isGenerating}
             >
-              <RotateCcw size={14} />
+              <RotateCw size={14} />
               <span>Regenerate</span>
-            </button>
-
-            <button className={styles.secondaryBtn} onClick={handleExport} title="Export HTML">
-              <Download size={14} />
-              <span>Export</span>
-            </button>
-
-            <button className={styles.deployBtn} onClick={handleDeploy} title="Deploy to Vercel">
-              <Rocket size={14} />
-              <span>Deploy</span>
             </button>
 
             <button
@@ -712,9 +719,10 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
         </div>
       </div>
 
-      {/* Settings Panel */}
-      {showSettings && (
-        <div className={styles.settingsPanel}>
+      {/* Main Content Area */}
+      <div className={styles.mainArea}>
+        {/* Vertical Settings Panel */}
+        <div className={`${styles.verticalSettings} ${showSettings ? styles.open : ''}`}>
           <div className={styles.settingsHeader}>
             <span>Style Settings</span>
             <button className={styles.iconBtn} onClick={() => setShowSettings(false)}>
@@ -768,11 +776,9 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
             </div>
           </div>
         </div>
-      )}
 
-      {/* Version History Panel */}
-      {showHistory && (
-        <div className={styles.settingsPanel}>
+        {/* Vertical Version History Panel */}
+        <div className={`${styles.verticalSettings} ${showHistory ? styles.open : ''}`}>
           <div className={styles.settingsHeader}>
             <span>Version History</span>
             <button className={styles.iconBtn} onClick={() => setShowHistory(false)}>
@@ -792,7 +798,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem' }}>Click Generate to create a version</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
                 {versions.map((version) => (
                   <button
                     key={version._id}
@@ -813,10 +819,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
             )}
           </div>
         </div>
-      )}
 
-      {/* Main Content Area */}
-      <div className={styles.mainArea}>
         <div className={styles.splitContainer} ref={containerRef}>
           {/* tldraw Canvas */}
           {viewMode !== 'preview' && (
@@ -1028,7 +1031,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                     <>
                       <label className={styles.urlLabel}>GitHub Repository</label>
                       <a 
-                        href={githubUrl} 
+                        href={githubUrl || undefined} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className={styles.deployUrl}
@@ -1040,7 +1043,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
 
                   <label className={styles.urlLabel}>Vercel Deployment</label>
                   <a 
-                    href={deployedUrl} 
+                    href={deployedUrl || undefined} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className={styles.deployUrl}

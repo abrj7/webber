@@ -59,9 +59,9 @@
 }
 
 .title {
-    font-family: 'Fuzzy Bubbles', cursive;
-    font-size: 1.4rem;
-    font-weight: 400;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
     color: #005461;
     margin: 0;
     text-transform: uppercase;
@@ -242,9 +242,9 @@
 }
 
 .historyTitle {
-    font-family: 'Fuzzy Bubbles', cursive;
-    font-size: 1rem;
-    font-weight: 400;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: #64748b;
     margin: 0 0 0.75rem 0;
     text-transform: uppercase;
