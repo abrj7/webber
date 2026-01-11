@@ -1,8 +1,20 @@
 "use client";
 
-import { Plus, Image as ImageIcon, MoreVertical, Home, Search, Clock, Star, Users, HelpCircle, LayoutGrid, Menu, ArrowLeft, SlidersHorizontal } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Plus,
+  Image as ImageIcon,
+  Home,
+  Search,
+  Clock,
+  Star,
+  Users,
+  HelpCircle,
+  LayoutGrid,
+  ArrowLeft,
+  SlidersHorizontal
+} from "lucide-react";
 import styles from "./Dashboard.module.css";
-import { useState } from "react";
 
 interface DashboardProps {
   onCreateNew: () => void;
@@ -13,143 +25,147 @@ export default function Dashboard({ onCreateNew, onHome }: DashboardProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const recentWebsites = [
-    { id: 1, name: "Lost & Found", description: "Centralized lost-and-found service f...", date: "Edited 2 mins ago" },
-    { id: 2, name: "Communicative Bracelet", description: "Interface for neurodivergent students.", date: "Edited yesterday" },
-    { id: 3, name: "Flowboard Landing", description: "Marketing page for the project.", date: "Edited 2 days ago" },
+    {
+      id: 1,
+      name: "Lost & Found Portal",
+      description: "A centralized service for tracking lost items across the UWaterloo campus with real-time status updates.",
+      date: "Edited 2 mins ago",
+      color: "#F0F9FF" // Soft Sky
+    },
+    {
+      id: 2,
+      name: "Communicative Interface",
+      description: "Accessibility-focused communication board designed for neurodivergent students.",
+      date: "Edited yesterday",
+      color: "#FFF9F9" // Soft Petal
+    }
   ];
 
   return (
-    <div className={styles.container}>
-      {/* Sidebar */}
+    <div className={styles['app-container']}>
+      {/* Refined Sidebar */}
       <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
-        <div className={styles.sidebarTop}>
-          <div className={styles.branding}>
-            {!isSidebarCollapsed && (
-              <>
-                <div className={styles.logo}>DH</div>
-                <span className={styles.brandName}>DeltaHacks</span>
-              </>
-            )}
-            <button
-              className={styles.toggleBtn}
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              <Menu size={20} />
-            </button>
-          </div>
-
-          <nav className={styles.nav}>
-            <div className={`${styles.navItem} ${styles.active}`} title="Home">
-              <Home size={18} />
-              {!isSidebarCollapsed && <span>Home</span>}
-            </div>
-            <div className={styles.navItem} title="Recent">
-              <Clock size={18} />
-              {!isSidebarCollapsed && <span>Recent</span>}
-            </div>
-            <div className={styles.navItem} title="Starred">
-              <Star size={18} />
-              {!isSidebarCollapsed && <span>Starred</span>}
-            </div>
-          </nav>
-
-          {!isSidebarCollapsed && (
-            <div className={styles.spacesSection}>
-              <div className={styles.spacesHeader}>
-                <span>SPACES</span>
-                <Plus size={14} />
-              </div>
-              <div className={styles.spaceItem}>
-                <span className={styles.spaceDot}></span>
-                <span>Hackathon</span>
-              </div>
-              <div className={styles.spaceItem}>
-                <span className={styles.spaceDot}></span>
-                <span>Design System</span>
-              </div>
-            </div>
-          )}
+        <div className={styles['logo-container']}>
+          <div className={styles['logo-square']}>DH</div>
+          {!isSidebarCollapsed && <span className={styles['logo-text']}>DeltaHacks</span>}
         </div>
 
-        <div className={styles.sidebarFooter}>
-          <div className={styles.navItem} title="Invite members">
-            <Users size={18} />
-            {!isSidebarCollapsed && <span>Invite members</span>}
+        <nav className={styles['nav-group']}>
+          <div className={`${styles['nav-link']} ${styles.active}`} title="Home">
+            <Home size={22} strokeWidth={2} />
+            {!isSidebarCollapsed && <span>Dashboard</span>}
           </div>
-          <div className={styles.navItem} title="Help & resources">
-            <HelpCircle size={18} />
-            {!isSidebarCollapsed && <span>Help & resources</span>}
+          <div className={styles['nav-link']} title="Recent">
+            <Clock size={22} strokeWidth={2} />
+            {!isSidebarCollapsed && <span>Recent</span>}
+          </div>
+          <div className={styles['nav-link']} title="Starred">
+            <Star size={22} strokeWidth={2} />
+            {!isSidebarCollapsed && <span>Starred</span>}
+          </div>
+        </nav>
+
+        <div className="mt-auto pt-10 border-t border-slate-100" style={{ marginTop: 'auto', paddingTop: '2.5rem', borderTop: '1px solid #f1f5f9' }}>
+          <div className={styles['nav-link']} title="Invite">
+            <Users size={22} strokeWidth={2} />
+            {!isSidebarCollapsed && <span>Community</span>}
+          </div>
+          <div className={styles['nav-link']} title="Help">
+            <HelpCircle size={22} strokeWidth={2} />
+            {!isSidebarCollapsed && <span>Support</span>}
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className={styles.mainContent}>
-        <div className={styles.topBar}>
-          <button className={styles.backBtn} onClick={onHome} title="Back to landing page">
-            <ArrowLeft size={18} />
-            <span>Back to Home</span>
+      {/* Modern Main Scroll */}
+      <main className={styles['main-scroll']}>
+        <header className={styles['header-nav']}>
+          <button className={styles['btn-action']} onClick={onHome}>
+            <ArrowLeft size={18} strokeWidth={2.5} />
+            <span>Go Back</span>
           </button>
-          <div className={styles.topBarRight}>
-            <button className={styles.feedbackBtn}>Feedback</button>
-            <div className={styles.userAvatar}>AJ</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#94a3b8', cursor: 'pointer' }} className="hover:text-black transition-colors">Give Feedback</span>
+            <div className={styles['avatar-circle']}>AJ</div>
           </div>
-        </div>
+        </header>
 
-        {/* Hero Section */}
-        <div className={styles.hero}>
-          <h1 className={styles.heroTitle}>Let's create something new, Aidan.</h1>
-          <div className={styles.searchBar}>
-            <Search size={20} className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Search designs, folders and uploads"
-              className={styles.searchInput}
-            />
-            <button className={styles.filterBtn}>
-              <SlidersHorizontal size={20} />
-            </button>
+        {/* Editorial Greeting */}
+        <section>
+          <h1 className={styles['greeting-serif']}>Good morning, Aidan.</h1>
+          <p className={styles['sub-greeting']}>Your creative workspace is ready. Pick up where you left off.</p>
+
+          <div className={styles['search-area']}>
+            <div className={styles['search-pill']}>
+              <Search size={22} color="#94a3b8" strokeWidth={2.5} />
+              <input
+                type="text"
+                placeholder="Search projects, components, or files..."
+                className={styles['search-input']}
+              />
+              <div className={styles['v-divider']}></div>
+              <button style={{ padding: '0.75rem', borderRadius: '9999px', color: '#94a3b8' }} className="hover:bg-white hover:text-black">
+                <SlidersHorizontal size={22} strokeWidth={2} />
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Start From Scratch Section */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>START FROM SCRATCH</h2>
-          <div className={styles.templateGrid}>
-            <div className={`${styles.templateCard} ${styles.blankCard}`} onClick={onCreateNew}>
-              <Plus size={32} className={styles.templateIcon} />
-              <span className={styles.templateLabel}>Blank Website</span>
+        {/* Start Fresh Section */}
+        <section style={{ marginBottom: '6rem' }}>
+          <span className={styles['section-label']}>Create</span>
+          <div className={styles['grid-templates']}>
+            <div className={styles['card-new']} style={{ borderStyle: 'dashed', borderWidth: '2px' }} onClick={onCreateNew}>
+              <div className={styles['icon-wrap']}>
+                <Plus size={32} color="#10b981" strokeWidth={2.5} />
+              </div>
+              <span style={{ fontWeight: 700, fontSize: '1.125rem' }}>Blank Space</span>
             </div>
-            <div className={styles.templateCard}>
-              <LayoutGrid size={32} className={styles.templateIcon} />
-              <span className={styles.templateLabel}>Landing Page</span>
+            <div className={styles['card-new']}>
+              <div className={styles['icon-wrap']}>
+                <LayoutGrid size={32} color="#cbd5e1" strokeWidth={2} />
+              </div>
+              <span style={{ fontWeight: 700, fontSize: '1.125rem' }}>Landing Page</span>
             </div>
-            <div className={styles.templateCard}>
-              <ImageIcon size={32} className={styles.templateIcon} />
-              <span className={styles.templateLabel}>Portfolio</span>
+            <div className={styles['card-new']}>
+              <div className={styles['icon-wrap']}>
+                <ImageIcon size={32} color="#cbd5e1" strokeWidth={2} />
+              </div>
+              <span style={{ fontWeight: 700, fontSize: '1.125rem' }}>Portfolio</span>
             </div>
           </div>
         </section>
 
         {/* Recent Work Section */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>RECENT WORK</h2>
-            <button className={styles.viewAllBtn}>View All</button>
+        <section>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+            <h2 className={styles['recent-title']}>Recent Work</h2>
+            <a href="#" style={{ fontWeight: 700, color: '#10b981' }}>View All</a>
           </div>
-          <div className={styles.projectGrid}>
+
+          <div className={styles['grid-projects']}>
             {recentWebsites.map((project) => (
-              <div key={project.id} className={styles.projectCard}>
-                <div className={styles.projectPreview}>
-                  <div className={styles.previewContent}></div>
+              <div key={project.id} className={styles['project-card']}>
+                <div className={styles['card-stage']} style={{ backgroundColor: project.color }}>
+                  <div className={styles['mockup-window']}>
+                    <div className={styles['mockup-controls']}>
+                      <div className={styles['mockup-dot']}></div>
+                      <div className={styles['mockup-dot']}></div>
+                      <div className={styles['mockup-dot']}></div>
+                    </div>
+                    <div className={styles['mockup-header']}></div>
+                    <div className={styles['mockup-grid']}>
+                      <div className={styles['mockup-item']}></div>
+                      <div className={styles['mockup-item']}></div>
+                    </div>
+                  </div>
                 </div>
-                <div className={styles.projectInfo}>
-                  <h3 className={styles.projectName}>{project.name}</h3>
-                  <p className={styles.projectDesc}>{project.description}</p>
-                  <div className={styles.projectMeta}>
-                    <span className={styles.statusDot}></span>
-                    <span className={styles.projectDate}>{project.date}</span>
+                <div className={styles['card-content']}>
+                  <h3 className={styles['project-title']}>{project.name}</h3>
+                  <p className={styles['project-summary']}>{project.description}</p>
+                  <div className={styles['card-footer']}>
+                    <div className={styles['dot-indicator']}></div>
+                    <span className={styles['date-label']}>{project.date}</span>
                   </div>
                 </div>
               </div>
