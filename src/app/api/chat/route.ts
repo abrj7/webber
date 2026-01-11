@@ -1,7 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const MODEL_NAME = 'gemini-2.5-flash';
 
 // ==================== STYLE-SPECIFIC EDITING RULES ====================
@@ -41,7 +41,6 @@ You are an EXPERT WEBSITE EDITOR AI. The user has a generated website and wants 
 ${currentHtml}
 
 ## ACTIVE DESIGN SYSTEM:
-
 **STYLE:** ${finalStyle}
 **BACKGROUND COLOR:** ${finalBgColor}
 **ACCENT COLOR:** ${finalAccentColor}
@@ -51,74 +50,45 @@ Style Guidelines: ${getStyleEditingRules(finalStyle)}
 ## COLOR PALETTE (MUST MAINTAIN):
 - Background: ${finalBgColor}
 - Accent/CTAs: ${finalAccentColor}
-- All edits must stay within this color palette
 
 ## USER'S EDIT REQUEST:
 "${message}"
 
 ## EDITING RULES:
+1. Preserve the Design System: All changes must match the "${finalStyle}" aesthetic
+2. Color Consistency: Only use ${finalBgColor}, ${finalAccentColor}, and their variations
+3. Minimal Changes: Only modify what the user explicitly requests
+4. Maintain Structure: Keep existing layout unless asked to change it
+5. Quality First: Ensure responsive design and accessibility are maintained
 
-1. **Preserve the Design System**: All changes must match the "${finalStyle}" aesthetic
-2. **Color Consistency**: Only use ${finalBgColor}, ${finalAccentColor}, and their variations
-3. **Minimal Changes**: Only modify what the user explicitly requests
-4. **Maintain Structure**: Keep existing layout unless asked to change it
-5. **Quality First**: Ensure responsive design and accessibility are maintained
-
-## INTERPRETATION GUIDE:
-
-Common requests and how to handle them:
-- "Make it bigger/smaller" → Adjust font-size, padding, or element dimensions
-- "Change color to X" → Update the specific element while maintaining palette harmony
-- "Add a button" → Use accent color, match existing button styles
-- "More spacing" → Increase padding/margins following the style's spacing rules
-- "Make it pop" → Add subtle animations, shadows, or increase contrast
-- "Center it" → Use flexbox or text-align as appropriate
-- "Add an image" → Use placeholder images from picsum or unsplash
-
-## OUTPUT FORMAT (JSON only, NO markdown backticks):
+## OUTPUT FORMAT (JSON ONLY):
 {
   "html": "BODY CONTENT ONLY - semantic HTML5. NO DOCTYPE, html, head, or body tags.",
   "css": "Complete updated CSS maintaining the style system",
   "js": "JavaScript if needed (usually empty string)",
   "changes": "Brief description of what was changed"
 }
-
-CRITICAL REMINDERS:
-- The "html" field must contain ONLY body content, NOT a full HTML document
-- Maintain the "${finalStyle}" style throughout all changes
-- Use ${finalAccentColor} for any new CTAs, links, or highlights
-- Keep ${finalBgColor} as the primary background
 `;
 
     console.log(`✏️ Editing website: "${message.substring(0, 50)}..." | Style: ${finalStyle}`);
 
-    const response = await ai.models.generateContent({
+    const model = genAI.getGenerativeModel({ 
       model: MODEL_NAME,
-      contents: [{ parts: [{ text: systemPrompt }] }]
+      generationConfig: {
+        responseMimeType: "application/json",
+        maxOutputTokens: 8192,
+      }
     });
 
-    const text = response.text || "";
-    
-    console.log("📝 Edit response (first 300 chars):", text.substring(0, 300));
+    const result = await model.generateContent(systemPrompt);
+    const text = result.response.text();
     
     try {
-      let cleanedText = text
-        .replace(/```json\s*/gi, "")
-        .replace(/```\s*/g, "")
-        .trim();
-      
-      const jsonMatch = cleanedText.match(/\{[\s\S]*"html"[\s\S]*"css"[\s\S]*\}/);
-      if (jsonMatch) {
-        cleanedText = jsonMatch[0];
-      }
-      
-      const code = JSON.parse(cleanedText);
-      
+      const code = JSON.parse(text);
       console.log("✅ Edit applied:", code.changes || "Changes made");
-      
       return NextResponse.json(code);
     } catch (parseError) {
-      console.error("❌ Failed to parse chat response:", text.substring(0, 500));
+      console.error("❌ Failed to parse chat response:", text);
       return NextResponse.json({ 
         error: "Failed to apply changes. Try rephrasing your request.",
         raw: text.substring(0, 500)
