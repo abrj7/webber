@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-const MODEL_NAME = 'gemini-1.5-flash';
+const MODEL_NAME = 'gemini-2.5-flash';
 
 // Compact style rules
 function getCompactStyleRules(style: string): string {
@@ -102,7 +102,7 @@ ${getCompactStyleRules(style)}
     }
 
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-    
+
     const parts = [
       { text: systemPrompt },
       {
@@ -119,23 +119,23 @@ ${getCompactStyleRules(style)}
     });
 
     const text = response.text || "";
-    
+
     try {
       let cleanedText = text
         .replace(/```json\s*/gi, "")
         .replace(/```\s*/g, "")
         .trim();
-      
+
       const jsonMatch = cleanedText.match(/\{[\s\S]*"html"[\s\S]*"css"[\s\S]*\}/);
       if (jsonMatch) {
         cleanedText = jsonMatch[0];
       }
-      
+
       const code = JSON.parse(cleanedText);
       return NextResponse.json(code);
     } catch (parseError) {
       console.error("Failed to parse AI response:", text);
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Invalid AI response format. Please try again.",
         raw: text.substring(0, 1000)
       }, { status: 500 });

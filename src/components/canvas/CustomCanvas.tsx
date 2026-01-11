@@ -2,20 +2,20 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import styles from "./CustomCanvas.module.css";
-import { 
-  Menu, 
-  ArrowLeft, 
-  Send, 
-  RotateCcw, 
-  Download, 
-  Loader2, 
-  Settings, 
-  X, 
-  Sun, 
-  Moon, 
-  Rocket, 
-  History, 
-  Clock 
+import {
+  Menu,
+  ArrowLeft,
+  Send,
+  RotateCcw,
+  Download,
+  Loader2,
+  Settings,
+  X,
+  Sun,
+  Moon,
+  Rocket,
+  History,
+  Clock
 } from "lucide-react";
 import { Tldraw, Editor } from "tldraw";
 import "tldraw/tldraw.css";
@@ -49,7 +49,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
   const [editor, setEditor] = useState<Editor | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  
+
   // Backend/Persistence State
   const [showNameModal, setShowNameModal] = useState(false);
   const [currentProjectName, setCurrentProjectName] = useState(projectName);
@@ -103,22 +103,22 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
   // Handle resize move - optimized with requestAnimationFrame
   useEffect(() => {
     let animationFrameId: number | null = null;
-    
+
     const handleResize = (e: MouseEvent) => {
       if (!isDragging || !containerRef.current) return;
-      
+
       // Cancel any pending animation frame
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
-      
+
       // Use requestAnimationFrame for smooth updates
       animationFrameId = requestAnimationFrame(() => {
         if (!containerRef.current) return;
         const container = containerRef.current;
         const rect = container.getBoundingClientRect();
         const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
-        
+
         // Clamp between 20% and 80%
         setSplitPosition(Math.max(20, Math.min(80, newPosition)));
       });
@@ -156,6 +156,22 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
     editorInstance.store.listen(() => {
       setShowWelcome(false);
     }, { source: 'user', scope: 'document' });
+
+    // For new projects (no saved data yet), clear any shapes that might exist
+    // from tldraw's localStorage persistence. We'll load the correct data in useEffect.
+    if (projectId) {
+      // Schedule a check after mount to clear if no DB data
+      setTimeout(() => {
+        // This will be handled by the useEffect that loads project data
+      }, 0);
+    } else {
+      // No projectId = clear immediately for totally blank canvas
+      const shapeIds = editorInstance.getCurrentPageShapeIds();
+      if (shapeIds.size > 0) {
+        editorInstance.deleteShapes(Array.from(shapeIds));
+        console.log("🧹 Cleared shapes for blank canvas (no projectId)");
+      }
+    }
 
     // Set up auto-save listener
     if (projectId) {
@@ -204,7 +220,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
       fetch(`/api/projects/${projectId}`)
         .then(res => res.json())
         .then(data => {
-          if (data.project?.canvasData?.records) {
+          if (data.project?.canvasData?.records && data.project.canvasData.records.length > 0) {
             // Load the records into the store
             // Sanitize records to avoid tldraw validation errors (undefined fields)
             const records = data.project.canvasData.records.map((record: any) => {
@@ -219,6 +235,13 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               return sanitized;
             });
             editor.store.put(records);
+          } else {
+            // New project with no saved data - clear any existing shapes from localStorage cache
+            const allShapeIds = editor.getCurrentPageShapeIds();
+            if (allShapeIds.size > 0) {
+              editor.deleteShapes(Array.from(allShapeIds));
+              console.log("🧹 Cleared cached shapes for new blank canvas");
+            }
           }
           if (data.project?.generatedHtml) {
             setGeneratedHtml(data.project.generatedHtml);
@@ -429,11 +452,11 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
       // Remove any external references that could cause tainted canvas
       // Replace xlink:href with href and remove any external URLs
       svgString = svgString.replace(/xlink:href/g, 'href');
-      
+
       // Create the image with proper settings to avoid tainted canvas
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       // Use a data URL with properly encoded SVG
       const encodedSvg = encodeURIComponent(svgString)
         .replace(/'/g, '%27')
@@ -824,9 +847,10 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''}`}
               style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
             >
-              <Tldraw 
-                onMount={handleMount} 
-                persistenceKey={projectId ? `webber-project-${projectId}` : "sketchy-canvas"}
+              <Tldraw
+                key={projectId || 'new-project'}
+                onMount={handleMount}
+                persistenceKey={projectId ? `webber-project-${projectId}` : undefined}
               />
 
               {/* Welcome Overlay - disappears on first action */}
@@ -890,7 +914,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
 
           {/* Preview Section */}
           {viewMode !== 'canvas' && (
-            <div 
+            <div
               className={`${styles.previewSection} ${viewMode === 'preview' ? styles.fullWidth : ''}`}
               style={viewMode === 'split' ? { width: `${100 - splitPosition}%`, flex: 'none' } : undefined}
             >
@@ -906,14 +930,14 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
+                    <button
                       onClick={exitVersionPreview}
                       className={styles.secondaryBtn}
                       style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
                     >
                       Back to Live
                     </button>
-                    <button 
+                    <button
                       onClick={confirmRestore}
                       className={styles.generateBtn}
                       style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
@@ -965,21 +989,21 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3>Deploy to Vercel</h3>
-              <button 
-                className={styles.iconBtn} 
+              <button
+                className={styles.iconBtn}
                 onClick={() => !isDeploying && setShowDeployModal(false)}
                 disabled={isDeploying}
               >
                 <X size={18} />
               </button>
             </div>
-            
+
             <div className={styles.modalContent}>
               {!deployedUrl ? (
                 <>
                   <label className={styles.modalLabel}>Project Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={deployName}
                     onChange={(e) => setDeployName(e.target.value)}
                     placeholder="my-awesome-website"
@@ -991,8 +1015,8 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                   </p>
 
                   <label className={styles.checkboxLabel}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={pushToGitHub}
                       onChange={(e) => setPushToGitHub(e.target.checked)}
                       disabled={isDeploying}
@@ -1001,7 +1025,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                     <span>Also push to GitHub repository</span>
                   </label>
 
-                  <button 
+                  <button
                     className={styles.deployConfirmBtn}
                     onClick={handleDeployConfirm}
                     disabled={isDeploying || !deployName.trim()}
@@ -1023,13 +1047,13 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                 <div className={styles.deploySuccess}>
                   <div className={styles.successIcon}>🎉</div>
                   <h4>Deployed Successfully!</h4>
-                  
+
                   {githubUrl && (
                     <>
                       <label className={styles.urlLabel}>GitHub Repository</label>
-                      <a 
-                        href={githubUrl} 
-                        target="_blank" 
+                      <a
+                        href={githubUrl}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className={styles.deployUrl}
                       >
@@ -1039,16 +1063,16 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                   )}
 
                   <label className={styles.urlLabel}>Vercel Deployment</label>
-                  <a 
-                    href={deployedUrl} 
-                    target="_blank" 
+                  <a
+                    href={deployedUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className={styles.deployUrl}
                   >
                     {deployedUrl}
                   </a>
 
-                  <button 
+                  <button
                     className={styles.secondaryBtn}
                     onClick={() => {
                       setShowDeployModal(false);
