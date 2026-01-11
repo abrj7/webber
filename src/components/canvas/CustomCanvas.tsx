@@ -101,13 +101,22 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     }
   }, [editor, isDarkMode]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (isRegenerate = false) => {
+    if (isGenerating) return;
+
     if (!editor) {
       alert("Canvas not ready yet");
       return;
     }
 
     setGenerating(true);
+    console.log(isRegenerate ? "🔄 Regenerating website..." : "🚀 Generating website...");
+
+    // Safety timeout to reset generating state if something goes wrong
+    const timeoutId = setTimeout(() => {
+      setGenerating(false);
+      console.warn("⚠️ Generation timed out - resetting UI");
+    }, 60000); // 1 minute safety timeout
 
     try {
       // Get all shape IDs on the canvas
@@ -116,6 +125,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
       if (shapeIds.size === 0) {
         alert("Please draw something on the canvas first!");
         setGenerating(false);
+        clearTimeout(timeoutId);
         return;
       }
 
@@ -131,6 +141,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
       if (!svgElement) {
         alert("Failed to export canvas");
         setGenerating(false);
+        clearTimeout(timeoutId);
         return;
       }
 
@@ -164,7 +175,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
           console.log("📸 Canvas exported! Sending to API...");
 
           try {
-            // Send to API with style settings
+            // Send to API with style settings and existing HTML for regeneration
             const response = await fetch("/api/generate", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -173,6 +184,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 style: websiteStyle,
                 backgroundColor,
                 accentColor,
+                currentHtml: isRegenerate ? generatedHtml : null, // Pass existing HTML for updates
               }),
             });
 
@@ -182,21 +194,6 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
               console.error("API Error:", data.error);
               alert("Error: " + data.error);
             } else {
-              // Log the AI's analysis of the wireframe
-              if (data.analysis) {
-                console.log("🎨 AI WIREFRAME ANALYSIS:");
-                console.log("📝 Red Annotations Found:", data.analysis.annotations);
-                console.log("📐 Layout Structure:", data.analysis.layout);
-                console.log("🧩 Elements Created:", data.analysis.elements);
-
-                // Store analysis data for dynamic suggestions
-                setAnalysisData({
-                  annotations: data.analysis.annotations || [],
-                  layout: data.analysis.layout || "",
-                  elements: data.analysis.elements || []
-                });
-              }
-
               // Combine HTML, CSS, and JS into a single document
               const fullHtml = `
                 <!DOCTYPE html>
@@ -217,21 +214,21 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 setViewMode('split');
               }
             }
-          } catch (err) {
-            console.error("Fetch error:", err);
-            alert("Failed to connect to API");
           }
+        } catch (err) {
+          console.error("API/Process error:", err);
+          alert("Failed to generate website.");
+        } finally {
+          setGenerating(false);
+          clearTimeout(timeoutId);
         }
-
-        URL.revokeObjectURL(url);
-        setGenerating(false);
       };
 
       img.onerror = () => {
         console.error("Failed to load SVG as image");
-        URL.revokeObjectURL(url);
         setGenerating(false);
-        alert("Failed to process canvas");
+        clearTimeout(timeoutId);
+        alert("Failed to process wireframe.");
       };
 
       img.src = url;
@@ -240,11 +237,12 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
       console.error("Export error:", err);
       alert("Failed to export canvas");
       setGenerating(false);
+      clearTimeout(timeoutId);
     }
   };
 
   const handleRegenerate = () => {
-    handleGenerate();
+    handleGenerate(true);
   };
 
   const handleExport = () => {
@@ -380,7 +378,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
 
           <button
             className={styles.generateBtn}
-            onClick={handleGenerate}
+            onClick={() => handleGenerate()}
             disabled={isGenerating}
             style={{ opacity: isGenerating ? 0.7 : 1 }}
           >
