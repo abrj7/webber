@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import styles from "./CustomCanvas.module.css";
-import { Menu, ArrowLeft, Send, RotateCcw, Download, Loader2, Settings, X, Sun, Moon } from "lucide-react";
+import { Menu, ArrowLeft, Send, RotateCcw, Download, Loader2, Settings, X, Sun, Moon, Rocket } from "lucide-react";
 import { Tldraw, Editor } from "tldraw";
 import "tldraw/tldraw.css";
 import ChatPanel from "./ChatPanel";
@@ -27,22 +27,30 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  
+
   // Style customization state
   const [websiteStyle, setWebsiteStyle] = useState<StylePreset>('modern');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [accentColor, setAccentColor] = useState('#3b82f6');
-  
+
   // Analysis data from AI (for dynamic suggestions)
   const [analysisData, setAnalysisData] = useState<{
     annotations: string[];
     layout: string;
     elements: string[];
   } | null>(null);
-  
+
+  // Deploy state
+  const [showDeployModal, setShowDeployModal] = useState(false);
+  const [deployName, setDeployName] = useState("");
+  const [pushToGitHub, setPushToGitHub] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(null);
+  const [githubUrl, setGithubUrl] = useState<string | null>(null);
+
   // Store for loading state
   const { isGenerating, setGenerating } = useStore();
-  
+
   // Resize state for split view
   const [isDragging, setIsDragging] = useState(false);
   const [splitPosition, setSplitPosition] = useState(50); // percentage
@@ -58,11 +66,11 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     const handleResize = (e: MouseEvent) => {
       if (!isDragging || !containerRef.current) return;
-      
+
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
       const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
-      
+
       // Clamp between 20% and 80%
       setSplitPosition(Math.max(20, Math.min(80, newPosition)));
     };
@@ -104,7 +112,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     try {
       // Get all shape IDs on the canvas
       const shapeIds = editor.getCurrentPageShapeIds();
-      
+
       if (shapeIds.size === 0) {
         alert("Please draw something on the canvas first!");
         setGenerating(false);
@@ -144,15 +152,15 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
         canvas.width = svgWidth;
         canvas.height = svgHeight;
         const ctx = canvas.getContext('2d');
-        
+
         if (ctx) {
           // Fill white background
           ctx.fillStyle = 'white';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0);
-          
+
           const base64Image = canvas.toDataURL('image/png');
-          
+
           console.log("📸 Canvas exported! Sending to API...");
 
           try {
@@ -180,7 +188,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 console.log("📝 Red Annotations Found:", data.analysis.annotations);
                 console.log("📐 Layout Structure:", data.analysis.layout);
                 console.log("🧩 Elements Created:", data.analysis.elements);
-                
+
                 // Store analysis data for dynamic suggestions
                 setAnalysisData({
                   annotations: data.analysis.annotations || [],
@@ -188,7 +196,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                   elements: data.analysis.elements || []
                 });
               }
-              
+
               // Combine HTML, CSS, and JS into a single document
               const fullHtml = `
                 <!DOCTYPE html>
@@ -203,7 +211,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 </html>
               `;
               setGeneratedHtml(fullHtml);
-              
+
               // Auto-switch to split view if in canvas-only mode
               if (viewMode === 'canvas') {
                 setViewMode('split');
@@ -214,7 +222,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
             alert("Failed to connect to API");
           }
         }
-        
+
         URL.revokeObjectURL(url);
         setGenerating(false);
       };
@@ -254,6 +262,51 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     URL.revokeObjectURL(url);
   };
 
+  const handleDeploy = async () => {
+    if (!generatedHtml) {
+      alert("No generated code to deploy yet!");
+      return;
+    }
+    setShowDeployModal(true);
+  };
+
+  const handleDeployConfirm = async () => {
+    if (!deployName.trim()) {
+      alert("Please enter a project name");
+      return;
+    }
+
+    setIsDeploying(true);
+    setDeployedUrl(null);
+    setGithubUrl(null);
+
+    try {
+      const response = await fetch("/api/deploy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          html: generatedHtml,
+          projectName: deployName,
+          pushToGitHub,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert("Deploy error: " + data.error);
+      } else {
+        setDeployedUrl(data.url);
+        setGithubUrl(data.githubUrl || null);
+      }
+    } catch (err) {
+      console.error("Deploy error:", err);
+      alert("Failed to deploy");
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
   return (
     <div className={`${styles.container} ${isDarkMode ? styles.darkMode : ''}`}>
       {/* Toolbar */}
@@ -265,8 +318,8 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
           <button className={styles.iconBtn} title="Menu">
             <Menu size={20} />
           </button>
-          <button 
-            className={`${styles.iconBtn} ${showSettings ? styles.activeIconBtn : ''}`} 
+          <button
+            className={`${styles.iconBtn} ${showSettings ? styles.activeIconBtn : ''}`}
             title="Style Settings"
             onClick={() => setShowSettings(!showSettings)}
           >
@@ -305,9 +358,9 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
         </div>
 
         <div className={styles.rightSection}>
-          <button 
-            className={styles.secondaryBtn} 
-            onClick={handleRegenerate} 
+          <button
+            className={styles.secondaryBtn}
+            onClick={handleRegenerate}
             title="Regenerate"
             disabled={isGenerating}
           >
@@ -320,8 +373,13 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
             <span>Export</span>
           </button>
 
-          <button 
-            className={styles.generateBtn} 
+          <button className={styles.deployBtn} onClick={handleDeploy} title="Deploy to Vercel">
+            <Rocket size={16} />
+            <span>Deploy</span>
+          </button>
+
+          <button
+            className={styles.generateBtn}
             onClick={handleGenerate}
             disabled={isGenerating}
             style={{ opacity: isGenerating ? 0.7 : 1 }}
@@ -341,7 +399,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
               <X size={18} />
             </button>
           </div>
-          
+
           <div className={styles.settingsContent}>
             {/* Style Presets */}
             <div className={styles.settingsSection}>
@@ -359,7 +417,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 ))}
               </div>
             </div>
-            
+
             {/* Colors */}
             <div className={styles.settingsSection}>
               <label className={styles.settingsLabel}>Background Color</label>
@@ -373,7 +431,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
                 <span className={styles.colorValue}>{backgroundColor}</span>
               </div>
             </div>
-            
+
             <div className={styles.settingsSection}>
               <label className={styles.settingsLabel}>Accent Color</label>
               <div className={styles.colorPicker}>
@@ -395,12 +453,12 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
         <div className={styles.splitContainer} ref={containerRef}>
           {/* tldraw Canvas */}
           {viewMode !== 'preview' && (
-            <div 
+            <div
               className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''}`}
               style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
             >
-              <Tldraw 
-                onMount={handleMount} 
+              <Tldraw
+                onMount={handleMount}
                 persistenceKey="webber-canvas"
               />
             </div>
@@ -456,6 +514,114 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
           isDarkMode={isDarkMode}
         />
       </div>
+
+      {/* Deploy Modal */}
+      {showDeployModal && (
+        <div className={styles.modalOverlay} onClick={() => !isDeploying && setShowDeployModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Deploy to Vercel</h3>
+              <button
+                className={styles.iconBtn}
+                onClick={() => !isDeploying && setShowDeployModal(false)}
+                disabled={isDeploying}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className={styles.modalContent}>
+              {!deployedUrl ? (
+                <>
+                  <label className={styles.modalLabel}>Project Name</label>
+                  <input
+                    type="text"
+                    value={deployName}
+                    onChange={(e) => setDeployName(e.target.value)}
+                    placeholder="my-awesome-website"
+                    className={styles.modalInput}
+                    disabled={isDeploying}
+                  />
+                  <p className={styles.modalHint}>
+                    Your site will be deployed to: <strong>{deployName || "project-name"}.vercel.app</strong>
+                  </p>
+
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={pushToGitHub}
+                      onChange={(e) => setPushToGitHub(e.target.checked)}
+                      disabled={isDeploying}
+                      className={styles.checkbox}
+                    />
+                    <span>Also push to GitHub repository</span>
+                  </label>
+
+                  <button
+                    className={styles.deployConfirmBtn}
+                    onClick={handleDeployConfirm}
+                    disabled={isDeploying || !deployName.trim()}
+                  >
+                    {isDeploying ? (
+                      <>
+                        <Loader2 size={16} className={styles.spinning} />
+                        <span>Deploying...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Rocket size={16} />
+                        <span>Deploy Now</span>
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <div className={styles.deploySuccess}>
+                  <div className={styles.successIcon}>🎉</div>
+                  <h4>Deployed Successfully!</h4>
+
+                  {githubUrl && (
+                    <>
+                      <label className={styles.urlLabel}>GitHub Repository</label>
+                      <a
+                        href={githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.deployUrl}
+                      >
+                        {githubUrl}
+                      </a>
+                    </>
+                  )}
+
+                  <label className={styles.urlLabel}>Vercel Deployment</label>
+                  <a
+                    href={deployedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.deployUrl}
+                  >
+                    {deployedUrl}
+                  </a>
+
+                  <button
+                    className={styles.secondaryBtn}
+                    onClick={() => {
+                      setShowDeployModal(false);
+                      setDeployedUrl(null);
+                      setGithubUrl(null);
+                      setDeployName("");
+                      setPushToGitHub(false);
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
