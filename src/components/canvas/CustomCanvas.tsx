@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import styles from "./CustomCanvas.module.css";
-import { Menu, ArrowLeft, Send, RotateCcw, Download, Loader2, Settings, X } from "lucide-react";
+import { Menu, ArrowLeft, Send, RotateCcw, Download, Loader2, Settings, X, Sun, Moon } from "lucide-react";
 import { Tldraw, Editor } from "tldraw";
 import "tldraw/tldraw.css";
 import ChatPanel from "./ChatPanel";
@@ -26,6 +26,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   const [generatedHtml, setGeneratedHtml] = useState("");
   const [editor, setEditor] = useState<Editor | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   // Style customization state
   const [websiteStyle, setWebsiteStyle] = useState<StylePreset>('modern');
@@ -41,10 +42,56 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
   
   // Store for loading state
   const { isGenerating, setGenerating } = useStore();
+  
+  // Resize state for split view
+  const [isDragging, setIsDragging] = useState(false);
+  const [splitPosition, setSplitPosition] = useState(50); // percentage
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle resize start
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  // Handle resize move
+  useEffect(() => {
+    const handleResize = (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return;
+      
+      const container = containerRef.current;
+      const rect = container.getBoundingClientRect();
+      const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
+      
+      // Clamp between 20% and 80%
+      setSplitPosition(Math.max(20, Math.min(80, newPosition)));
+    };
+
+    const handleResizeEnd = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleResize);
+      document.addEventListener('mouseup', handleResizeEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleResize);
+      document.removeEventListener('mouseup', handleResizeEnd);
+    };
+  }, [isDragging]);
 
   const handleMount = useCallback((editorInstance: Editor) => {
     setEditor(editorInstance);
   }, []);
+
+  // Update tldraw dark mode when isDarkMode changes
+  useEffect(() => {
+    if (editor) {
+      editor.user.updateUserPreferences({ colorScheme: isDarkMode ? 'dark' : 'light' });
+    }
+  }, [editor, isDarkMode]);
 
   const handleGenerate = async () => {
     if (!editor) {
@@ -348,7 +395,10 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
         <div className={styles.splitContainer} ref={containerRef}>
           {/* tldraw Canvas */}
           {viewMode !== 'preview' && (
-            <div className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''}`}>
+            <div 
+              className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''}`}
+              style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
+            >
               <Tldraw 
                 onMount={handleMount} 
                 persistenceKey="webber-canvas"
@@ -403,6 +453,7 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
           accentColor={accentColor}
           analysisData={analysisData}
           onHtmlUpdate={(newHtml: string) => setGeneratedHtml(newHtml)}
+          isDarkMode={isDarkMode}
         />
       </div>
     </div>

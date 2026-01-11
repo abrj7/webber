@@ -17,6 +17,7 @@ interface ChatPanelProps {
         elements: string[];
     } | null;
     onHtmlUpdate: (newHtml: string) => void;
+    isDarkMode: boolean;
 }
 
 interface HistoryItem {
@@ -34,7 +35,8 @@ export default function ChatPanel({
     backgroundColor,
     accentColor,
     analysisData,
-    onHtmlUpdate
+    onHtmlUpdate,
+    isDarkMode
 }: ChatPanelProps) {
     const [prompt, setPrompt] = useState("");
     const [isLoading, setIsLoading] = useState(false);
