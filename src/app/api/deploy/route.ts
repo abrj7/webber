@@ -140,6 +140,7 @@ export async function POST(req: Request) {
                     projectSettings: {
                         framework: null,
                     },
+                    target: "production", // Ensure it's a production deployment
                 }),
             });
 
@@ -150,11 +151,27 @@ export async function POST(req: Request) {
                 // Fallback to direct file deployment if GitHub deployment fails
                 console.log("Falling back to direct file deployment...");
             } else {
-                deploymentUrl = `https://${deployData.url}`;
+                // Fetch project domains to find the production domain
+                const projectId = deployData.projectId || sanitizedName;
+                const projectResponse = await fetch(`https://api.vercel.com/v9/projects/${projectId}/domains`, {
+                    headers: {
+                        Authorization: `Bearer ${VERCEL_API_TOKEN}`,
+                    },
+                });
+
+                let finalUrl = `https://${deployData.url}`;
+
+                if (projectResponse.ok) {
+                    const projectData = await projectResponse.json();
+                    const prodDomain = projectData.domains?.find((d: any) => d.name.endsWith(".vercel.app") && !d.name.includes("-git-"))?.name;
+                    if (prodDomain) {
+                        finalUrl = `https://${prodDomain}`;
+                    }
+                }
 
                 return NextResponse.json({
                     success: true,
-                    url: deploymentUrl,
+                    url: finalUrl,
                     githubUrl: githubRepoUrl,
                     projectName: sanitizedName,
                 });
@@ -198,6 +215,7 @@ export async function POST(req: Request) {
                 projectSettings: {
                     framework: null,
                 },
+                target: "production", // Ensure it's a production deployment
             }),
         });
 
@@ -210,11 +228,27 @@ export async function POST(req: Request) {
             }, { status: 500 });
         }
 
-        deploymentUrl = `https://${deployData.url}`;
+        // Fetch project domains to find the production domain
+        const projectId = deployData.projectId || sanitizedName;
+        const projectResponse = await fetch(`https://api.vercel.com/v9/projects/${projectId}/domains`, {
+            headers: {
+                Authorization: `Bearer ${VERCEL_API_TOKEN}`,
+            },
+        });
+
+        let finalUrl = `https://${deployData.url}`;
+
+        if (projectResponse.ok) {
+            const projectData = await projectResponse.json();
+            const prodDomain = projectData.domains?.find((d: any) => d.name.endsWith(".vercel.app") && !d.name.includes("-git-"))?.name;
+            if (prodDomain) {
+                finalUrl = `https://${prodDomain}`;
+            }
+        }
 
         return NextResponse.json({
             success: true,
-            url: deploymentUrl,
+            url: finalUrl,
             githubUrl: githubRepoUrl,
             projectName: sanitizedName,
         });

@@ -41,6 +41,14 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
     elements: string[];
   } | null>(null);
 
+  // Deploy state
+  const [showDeployModal, setShowDeployModal] = useState(false);
+  const [deployName, setDeployName] = useState("");
+  const [pushToGitHub, setPushToGitHub] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(null);
+  const [githubUrl, setGithubUrl] = useState<string | null>(null);
+
   // Store for loading state
   const { isGenerating, setGenerating } = useStore();
 
@@ -396,6 +404,11 @@ export default function CustomCanvas({ onBack }: { onBack: () => void }) {
             <button className={styles.secondaryBtn} onClick={handleExport} title="Export HTML">
               <Download size={14} />
               <span>Export</span>
+            </button>
+
+            <button className={styles.deployBtn} onClick={handleDeploy} title="Deploy to Vercel">
+              <Rocket size={14} />
+              <span>Deploy</span>
             </button>
 
             <button

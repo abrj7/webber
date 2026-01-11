@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import Dashboard from "@/components/ui/Dashboard";
 import CustomCanvas from "@/components/canvas/CustomCanvas";
@@ -12,6 +12,19 @@ type ViewState = "AUTH" | "LANDING" | "DASHBOARD" | "CANVAS";
 export default function HomePage() {
   // Start with AUTH view - user must login/signup first
   const [view, setView] = useState<ViewState>("AUTH");
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = () => {
+      const cookies = document.cookie.split(';');
+      const hasUser = cookies.some(c => c.trim().startsWith('github_user='));
+      if (hasUser) {
+        setView("DASHBOARD");
+      }
+    };
+    
+    checkSession();
+  }, []);
 
   // Auth page - login/signup
   if (view === "AUTH") {
