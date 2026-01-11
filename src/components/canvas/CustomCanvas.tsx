@@ -913,7 +913,6 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                 </div>
               )}
             </div>
-          )}
 
           {/* Resize Handle - only shown in split view */}
           {viewMode === 'split' && (
