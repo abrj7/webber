@@ -320,33 +320,33 @@
 /* Project Cards Refined */
 .grid-projects {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 3.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
 }
 
 .project-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
-  border-radius: 36px;
+  border-radius: 20px;
   overflow: hidden;
   border: 1px solid var(--ws-border);
   display: flex;
   flex-direction: column;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .project-card:hover {
-  transform: translateY(-15px) scale(1.01);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.08);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   border-color: var(--ws-teal);
 }
 
 .card-stage {
-  height: 360px;
+  height: 180px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 3.5rem 3.5rem 0 3.5rem;
+  padding: 1.5rem 1.5rem 0 1.5rem;
   position: relative;
   overflow: hidden;
 }
@@ -365,70 +365,70 @@
   width: 100%;
   height: 100%;
   background: #ffffff;
-  border-radius: 24px 24px 0 0;
+  border-radius: 12px 12px 0 0;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.03);
-  padding: 1.75rem;
+  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.03);
+  padding: 1rem;
   display: flex;
   flex-direction: column;
 }
 
 .mockup-controls {
   display: flex;
-  gap: 10px;
-  margin-bottom: 2.5rem;
+  gap: 6px;
+  margin-bottom: 1rem;
 }
 
 .mockup-dot {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   background: #f1f3f4;
   border-radius: 50%;
 }
 
 .mockup-header {
   width: 60%;
-  height: 48px;
+  height: 24px;
   background: var(--ws-snow);
-  border-radius: 12px;
-  margin-bottom: 2rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
 }
 
 .mockup-grid {
   display: flex;
-  gap: 24px;
+  gap: 12px;
 }
 
 .mockup-item {
   flex: 1;
-  height: 180px;
+  height: 60px;
   background: var(--ws-snow);
-  border-radius: 16px;
+  border-radius: 8px;
 }
 
 .card-content {
-  padding: 3.5rem;
+  padding: 1.25rem;
 }
 
 .project-title {
   font-family: 'Fuzzy Bubbles', cursive;
-  font-size: 2rem;
+  font-size: 1.1rem;
   font-weight: 400;
-  margin-bottom: 1rem;
+  margin-bottom: 0.35rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
 .project-summary {
   color: var(--ws-slate);
-  font-size: 1.15rem;
-  line-height: 1.7;
-  margin-bottom: 3rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
   font-weight: 400;
 }
 
 .card-footer {
-  padding-top: 2rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--ws-border);
   display: flex;
   align-items: center;
@@ -436,18 +436,18 @@
 }
 
 .dot-indicator {
-  width: 18px;
-  height: 18px;
+  width: 10px;
+  height: 10px;
   background: var(--ws-teal);
   border-radius: 50%;
-  border: 3px solid white;
+  border: 2px solid white;
   box-shadow: 0 0 0 1px var(--ws-teal);
 }
 
 .date-label {
   color: #94a3b8;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.75rem;
 }
 
 /* Spinner animation */
