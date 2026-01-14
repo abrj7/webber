@@ -1,6 +1,6 @@
 # Sketchy
 
-Sketchy is a web application that converts hand-drawn wireframes into functional websites using AI. Users draw interface mockups on a canvas, and the application generates production-ready HTML, CSS, and JavaScript code.
+Sketchy is an ai-powered web application that converts hand-drawn wireframes into functional websites using AI. Users draw interface mockups on a canvas, and the application generates production-ready HTML, CSS, and JavaScript code.
 
 ## Project Links
 
