@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import styles from "./Dashboard.module.css";
 import UserProfile from "./UserProfile";
+import SupportModal from "./SupportModal";
 import { getCurrentUser, User, getGitHubUser } from "@/lib/auth";
 
 interface Project {
@@ -66,14 +67,32 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [displayedGreeting, setDisplayedGreeting] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set());
+  const [recentlyOpened, setRecentlyOpened] = useState<Record<string, number>>({});
+  const [activeFilter, setActiveFilter] = useState<'all' | 'starred' | 'recent'>('all');
 
   useEffect(() => {
     const currentUser = getCurrentUser();
     const githubUser = getGitHubUser();
-    
+
     // Prioritize standard user, then github user
     const activeUser = currentUser || githubUser;
     setUser(activeUser);
+
+    // Load starred projects from localStorage
+    const savedStarred = localStorage.getItem('starredProjects');
+    if (savedStarred) {
+      setStarredProjects(new Set(JSON.parse(savedStarred)));
+    }
+
+    // Load recently opened projects from localStorage
+    const savedRecent = localStorage.getItem('recentlyOpened');
+    if (savedRecent) {
+      setRecentlyOpened(JSON.parse(savedRecent));
+    }
 
     // Fetch user's projects
     if (activeUser) {
@@ -84,6 +103,29 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
       setIsLoading(false);
     }
   }, []);
+
+  // Typewriter effect for greeting
+  useEffect(() => {
+    if (!user) return;
+
+    const userName = user?.name?.split(' ')[0] || user?.login || 'Creator';
+    const fullGreeting = `${getGreeting()}, ${userName}.`;
+    let currentIndex = 0;
+    setDisplayedGreeting('');
+    setIsTypingComplete(false);
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < fullGreeting.length) {
+        setDisplayedGreeting(fullGreeting.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTypingComplete(true);
+        clearInterval(typingInterval);
+      }
+    }, 60);
+
+    return () => clearInterval(typingInterval);
+  }, [user]);
 
   const fetchProjects = async (userId: string) => {
     try {
@@ -127,10 +169,42 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   };
 
   const handleOpenProject = (project: Project) => {
+    // Track this project as recently opened
+    const newRecent = { ...recentlyOpened, [project._id]: Date.now() };
+    setRecentlyOpened(newRecent);
+    localStorage.setItem('recentlyOpened', JSON.stringify(newRecent));
+
     if (onOpenProject) {
       onOpenProject(project._id, project.name);
     }
   };
+
+  const toggleStar = (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation(); // Prevent card click
+    setStarredProjects(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId);
+      } else {
+        newSet.add(projectId);
+      }
+      localStorage.setItem('starredProjects', JSON.stringify(Array.from(newSet)));
+      return newSet;
+    });
+  };
+
+  const filteredProjects = (() => {
+    if (activeFilter === 'starred') {
+      return projects.filter(p => starredProjects.has(p._id));
+    }
+    if (activeFilter === 'recent') {
+      // Only show projects that have been opened, sorted by most recent
+      return projects
+        .filter(p => recentlyOpened[p._id])
+        .sort((a, b) => (recentlyOpened[b._id] || 0) - (recentlyOpened[a._id] || 0));
+    }
+    return projects;
+  })();
 
   return (
     <div className={styles['app-container']}>
@@ -142,15 +216,27 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
         </div>
 
         <nav className={styles['nav-group']}>
-          <div className={`${styles['nav-link']} ${styles.active}`} title="Home">
+          <div
+            className={`${styles['nav-link']} ${activeFilter === 'all' ? styles.active : ''}`}
+            title="Home"
+            onClick={() => setActiveFilter('all')}
+          >
             <Home size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Dashboard</span>}
           </div>
-          <div className={styles['nav-link']} title="Recent">
+          <div
+            className={`${styles['nav-link']} ${activeFilter === 'recent' ? styles.active : ''}`}
+            title="Recent"
+            onClick={() => setActiveFilter('recent')}
+          >
             <Clock size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Recent</span>}
           </div>
-          <div className={styles['nav-link']} title="Starred">
+          <div
+            className={`${styles['nav-link']} ${activeFilter === 'starred' ? styles.active : ''}`}
+            title="Starred"
+            onClick={() => setActiveFilter('starred')}
+          >
             <Star size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Starred</span>}
           </div>
@@ -161,7 +247,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
             <Users size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Community</span>}
           </div>
-          <div className={styles['nav-link']} title="Help">
+          <div className={styles['nav-link']} title="Help" onClick={() => setIsSupportModalOpen(true)}>
             <HelpCircle size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Support</span>}
           </div>
@@ -176,14 +262,25 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
             <span>Go Back</span>
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#94a3b8', cursor: 'pointer' }} className="hover:text-black transition-colors">Give Feedback</span>
+            <a
+              href="https://github.com/abrj7/sketchy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles['github-star-link']}
+            >
+              <Star size={16} strokeWidth={2.5} className={styles['star-icon']} />
+              <span>Star Sketchy on GitHub</span>
+            </a>
             <UserProfile onLogout={onLogout} />
           </div>
         </header>
 
         {/* Editorial Greeting */}
         <section>
-          <h1 className={styles['greeting-serif']}>{getGreeting()}, {user?.name?.split(' ')[0] || user?.login || 'Creator'}.</h1>
+          <h1 className={styles['greeting-serif']}>
+            {displayedGreeting}
+            <span className={`${styles['typing-cursor']} ${isTypingComplete ? styles['cursor-blink'] : ''}`}>|</span>
+          </h1>
           <p className={styles['sub-greeting']}>Your creative workspace is ready. Pick up where you left off.</p>
 
           <div className={styles['search-area']}>
@@ -250,14 +347,23 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
             <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
               <Loader2 size={32} color="#94a3b8" className={styles.spinner} />
             </div>
-          ) : projects.length === 0 ? (
+          ) : filteredProjects.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-              <p style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>No projects yet</p>
-              <p style={{ fontSize: '0.875rem' }}>Click "Blank Space" to create your first project!</p>
+              <p style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>
+                {activeFilter === 'starred' ? 'No starred projects yet' :
+                  activeFilter === 'recent' ? 'No recently opened projects' : 'No projects yet'}
+              </p>
+              <p style={{ fontSize: '0.875rem' }}>
+                {activeFilter === 'starred'
+                  ? 'Click the star icon on a project to add it here!'
+                  : activeFilter === 'recent'
+                    ? 'Open a project to see it here!'
+                    : 'Click "Blank Space" to create your first project!'}
+              </p>
             </div>
           ) : (
             <div className={styles['grid-projects']}>
-              {projects.map((project, index) => (
+              {filteredProjects.map((project, index) => (
                 <div
                   key={project._id}
                   className={styles['project-card']}
@@ -282,8 +388,17 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
                     <h3 className={styles['project-title']}>{project.name}</h3>
                     <p className={styles['project-summary']}>Canvas project</p>
                     <div className={styles['card-footer']}>
-                      <div className={styles['dot-indicator']}></div>
-                      <span className={styles['date-label']}>{formatRelativeTime(project.updatedAt)}</span>
+                      <div className={styles['footer-left']}>
+                        <div className={styles['dot-indicator']}></div>
+                        <span className={styles['date-label']}>{formatRelativeTime(project.updatedAt)}</span>
+                      </div>
+                      <button
+                        className={`${styles['star-button']} ${starredProjects.has(project._id) ? styles['starred'] : ''}`}
+                        onClick={(e) => toggleStar(e, project._id)}
+                        title={starredProjects.has(project._id) ? 'Unstar project' : 'Star project'}
+                      >
+                        <Star size={18} strokeWidth={2} fill={starredProjects.has(project._id) ? '#facc15' : 'none'} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -292,6 +407,12 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           )}
         </section>
       </main>
+
+      {/* Support Modal */}
+      <SupportModal
+        isOpen={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
+      />
     </div>
   );
 }
