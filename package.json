@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@formspree/react": "^3.0.0",
     "@google/genai": "^1.35.0",
     "@google/generative-ai": "latest",
     "bcryptjs": "^3.0.3",
