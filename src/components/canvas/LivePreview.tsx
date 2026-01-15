@@ -31,6 +31,7 @@ export default function LivePreview({ htmlContent }: LivePreviewProps) {
                     border: 'none'
                 }}
                 title="Live Preview"
+                sandbox="allow-scripts allow-same-origin"
             />
         </div>
     );

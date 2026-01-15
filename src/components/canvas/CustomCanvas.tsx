@@ -765,7 +765,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
       {/* Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.leftSection}>
-          <button onClick={handleBack} className={styles.iconBtn} title="Back to dashboard">
+          <button onClick={handleBack} className={styles.iconBtn} title="Back to dashboard" data-tutorial="back-button">
             <ArrowLeft size={20} />
           </button>
           <button onClick={handleClearCanvas} className={styles.iconBtn} title="Clear Canvas" style={{ color: '#ef4444' }}>
@@ -779,6 +779,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                 setShowSettings(!showSettings);
                 setShowHistory(false);
               }}
+              data-tutorial="settings"
             >
               <Settings size={14} />
               <span>Settings</span>
@@ -790,6 +791,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                 setShowSettings(false);
               }}
               title="Version History"
+              data-tutorial="history"
             >
               <History size={14} />
               <span>History</span>
@@ -846,6 +848,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
             <button
               className={`${styles.secondaryBtn} ${viewMode === 'canvas' ? styles.activeBtn : ''}`}
               onClick={() => setViewMode('canvas')}
+              data-tutorial="canvas-tab"
             >
               <Layout size={14} />
               <span>Canvas</span>
@@ -853,6 +856,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
             <button
               className={`${styles.secondaryBtn} ${viewMode === 'split' ? styles.activeBtn : ''}`}
               onClick={() => setViewMode('split')}
+              data-tutorial="split-view"
             >
               <Columns size={14} />
               <span>Split View</span>
@@ -860,6 +864,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
             <button
               className={`${styles.secondaryBtn} ${viewMode === 'preview' ? styles.activeBtn : ''}`}
               onClick={() => setViewMode('preview')}
+              data-tutorial="preview-tab"
             >
               <Eye size={14} />
               <span>Preview</span>
@@ -869,7 +874,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
         </div>
 
         <div className={styles.rightSection}>
-          <button className={styles.deployBtn} onClick={handleDeploy} title="Deploy to Vercel">
+          <button className={styles.deployBtn} onClick={handleDeploy} title="Deploy to Vercel" data-tutorial="deploy">
             <Rocket size={14} />
             <span>Deploy</span>
           </button>
@@ -880,6 +885,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               onClick={handleRegenerate}
               title="Regenerate"
               disabled={isGenerating}
+              data-tutorial="regenerate"
             >
               <RotateCw size={14} />
               <span>Regenerate</span>
@@ -890,6 +896,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               onClick={() => handleGenerate()}
               disabled={isGenerating}
               style={{ opacity: isGenerating ? 0.7 : 1 }}
+              data-tutorial="generate"
             >
               {isGenerating ? <Loader2 size={14} className={styles.spinning} /> : <Send size={14} />}
               <span>{isGenerating ? "Generating..." : "Generate"}</span>
@@ -1000,10 +1007,13 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
         </div>
 
         <div className={styles.splitContainer} ref={containerRef}>
+          {/* Drag overlay to prevent mouse capture by tldraw/iframe during resize */}
+          {isDragging && <div className={styles.dragOverlay} />}
           {/* tldraw Canvas */}
           <div
             className={`${styles.canvasSection} ${viewMode === 'canvas' ? styles.fullWidth : ''} ${viewMode === 'preview' ? styles.hidden : ''}`}
             style={viewMode === 'split' ? { width: `${splitPosition}%`, flex: 'none' } : undefined}
+            data-tutorial="tool-picker"
           >
             <Tldraw
               key={projectId || 'new-project'}
@@ -1120,6 +1130,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
                 `}
               className={styles.previewIframe}
               title="Live Preview"
+              sandbox="allow-scripts allow-same-origin"
             />
           </div>
         </div>
