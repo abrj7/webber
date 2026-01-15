@@ -68,6 +68,7 @@ function formatRelativeTime(dateStr: string): string {
 
 // Colors for project cards
 const PROJECT_COLORS = ["#F0F9FF", "#FFF9F9", "#F0FFF4", "#FFFBEB", "#FDF4FF"];
+const ITEMS_PER_PAGE = 10;
 
 export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject }: DashboardProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -83,11 +84,20 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   const [activeFilter, setActiveFilter] = useState<'all' | 'starred' | 'recent'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showViewAllModal, setShowViewAllModal] = useState(false);
+  const [viewAllPage, setViewAllPage] = useState(1);
 
   // Refs for scrolling
   const topRef = React.useRef<HTMLDivElement>(null);
   const recentWorkRef = React.useRef<HTMLDivElement>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Helper function for section title
+  const getSectionTitle = () => {
+    if (activeFilter === 'starred') return 'Starred Projects';
+    if (activeFilter === 'recent') return 'Recently Opened';
+    return 'Recent Work';
+  };
 
   useEffect(() => {
     const currentUser = getCurrentUser();
