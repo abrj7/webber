@@ -15,7 +15,10 @@ import {
   SlidersHorizontal,
   Loader2,
   Trash2,
-  Pencil
+  Pencil,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import styles from "./Dashboard.module.css";
 import UserProfile from "./UserProfile";
@@ -78,6 +81,18 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set());
   const [recentlyOpened, setRecentlyOpened] = useState<Record<string, number>>({});
   const [activeFilter, setActiveFilter] = useState<'all' | 'starred' | 'recent'>('all');
+  const [showViewAllModal, setShowViewAllModal] = useState(false);
+  const [viewAllPage, setViewAllPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
+
+  // Get dynamic title based on active filter
+  const getSectionTitle = () => {
+    switch (activeFilter) {
+      case 'starred': return 'Starred Projects';
+      case 'recent': return 'Recent Projects';
+      default: return 'All Projects';
+    }
+  };
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -241,7 +256,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   return (
     <div className={styles['app-container']}>
       {/* Refined Sidebar */}
-      <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
+      <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`} data-tutorial="sidebar">
         <div className={styles['logo-container']}>
           <div className={styles['logo-square']}>SK</div>
           {!isSidebarCollapsed && <span className={styles['logo-text']}>Sketchy</span>}
@@ -339,6 +354,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
               className={styles['card-new']}
               style={{ borderStyle: 'dashed', borderWidth: '2px', cursor: isCreating ? 'wait' : 'pointer' }}
               onClick={handleCreateNew}
+              data-tutorial="create-new"
             >
               <div className={styles['icon-wrap']}>
                 {isCreating ? (
@@ -366,12 +382,17 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           </div>
         </section>
 
-        {/* Recent Work Section */}
+        {/* Projects Section */}
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
-            <h2 className={styles['recent-title']}>Recent Work</h2>
-            {projects.length > 0 && (
-              <a href="#" style={{ fontWeight: 700, color: '#005461' }}>View All</a>
+            <h2 className={styles['recent-title']}>{getSectionTitle()}</h2>
+            {filteredProjects.length > 0 && (
+              <button
+                onClick={() => setShowViewAllModal(true)}
+                style={{ fontWeight: 700, color: '#005461', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                View All
+              </button>
             )}
           </div>
 
@@ -401,6 +422,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
                   className={styles['project-card']}
                   onClick={() => handleOpenProject(project)}
                   style={{ cursor: 'pointer' }}
+                  {...(index === 0 ? { 'data-tutorial': 'project-card' } : {})}
                 >
                   <div className={styles['card-stage']} style={{ backgroundColor: PROJECT_COLORS[index % PROJECT_COLORS.length] }}>
                     <div className={styles['mockup-window']}>
@@ -414,6 +436,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
                           srcDoc={project.generatedHtml}
                           className={styles['preview-iframe']}
                           title={`Preview of ${project.name}`}
+                          sandbox="allow-scripts allow-same-origin"
                         />
                       ) : project.thumbnail ? (
                         <img
@@ -473,6 +496,93 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
         isOpen={isSupportModalOpen}
         onClose={() => setIsSupportModalOpen(false)}
       />
-    </div >
+
+      {/* View All Projects Modal - List View with Pagination */}
+      {showViewAllModal && (() => {
+        // Sort projects by most recent first
+        const sortedProjects = [...filteredProjects].sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+        const totalPages = Math.ceil(sortedProjects.length / ITEMS_PER_PAGE);
+        const startIndex = (viewAllPage - 1) * ITEMS_PER_PAGE;
+        const paginatedProjects = sortedProjects.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+        return (
+          <div className={styles['view-all-overlay']} onClick={() => { setShowViewAllModal(false); setViewAllPage(1); }}>
+            <div className={styles['view-all-modal']} onClick={(e) => e.stopPropagation()}>
+              <div className={styles['view-all-header']}>
+                <h2 className={styles['view-all-title']}>{getSectionTitle()}</h2>
+                <span className={styles['view-all-count']}>{sortedProjects.length} projects</span>
+                <button className={styles['view-all-close']} onClick={() => { setShowViewAllModal(false); setViewAllPage(1); }}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* List View */}
+              <div className={styles['view-all-list']}>
+                {paginatedProjects.map((project) => (
+                  <div
+                    key={project._id}
+                    className={styles['view-all-row']}
+                    onClick={() => {
+                      setShowViewAllModal(false);
+                      setViewAllPage(1);
+                      handleOpenProject(project);
+                    }}
+                  >
+                    <div className={styles['view-all-row-main']}>
+                      <span className={styles['view-all-row-name']}>{project.name}</span>
+                      <span className={styles['view-all-row-status']}>
+                        {project.generatedHtml ? 'Website generated' : project.canvasData?.records?.length ? 'Canvas in progress' : 'New project'}
+                      </span>
+                    </div>
+                    <div className={styles['view-all-row-meta']}>
+                      <span className={styles['view-all-row-time']}>{formatRelativeTime(project.updatedAt)}</span>
+                      <button
+                        className={`${styles['view-all-row-star']} ${starredProjects.has(project._id) ? styles.starred : ''}`}
+                        onClick={(e) => toggleStar(e, project._id)}
+                        title={starredProjects.has(project._id) ? 'Unstar' : 'Star'}
+                      >
+                        <Star size={16} fill={starredProjects.has(project._id) ? '#facc15' : 'none'} />
+                      </button>
+                      <button
+                        className={styles['view-all-row-delete']}
+                        onClick={(e) => handleDeleteProject(e, project._id)}
+                        title="Delete project"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className={styles['view-all-pagination']}>
+                  <button
+                    className={styles['pagination-btn']}
+                    onClick={() => setViewAllPage(p => Math.max(1, p - 1))}
+                    disabled={viewAllPage === 1}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className={styles['pagination-info']}>
+                    Page {viewAllPage} of {totalPages}
+                  </span>
+                  <button
+                    className={styles['pagination-btn']}
+                    onClick={() => setViewAllPage(p => Math.min(totalPages, p + 1))}
+                    disabled={viewAllPage === totalPages}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+    </div>
   );
 }
