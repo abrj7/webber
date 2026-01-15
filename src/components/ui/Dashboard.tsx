@@ -15,7 +15,8 @@ import {
   SlidersHorizontal,
   Loader2,
   Trash2,
-  Pencil
+  Pencil,
+  X
 } from "lucide-react";
 import styles from "./Dashboard.module.css";
 import UserProfile from "./UserProfile";
@@ -78,6 +79,16 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set());
   const [recentlyOpened, setRecentlyOpened] = useState<Record<string, number>>({});
   const [activeFilter, setActiveFilter] = useState<'all' | 'starred' | 'recent'>('all');
+  const [showViewAllModal, setShowViewAllModal] = useState(false);
+
+  // Get dynamic title based on active filter
+  const getSectionTitle = () => {
+    switch (activeFilter) {
+      case 'starred': return 'Starred Projects';
+      case 'recent': return 'Recent Projects';
+      default: return 'All Projects';
+    }
+  };
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -241,7 +252,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   return (
     <div className={styles['app-container']}>
       {/* Refined Sidebar */}
-      <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
+      <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`} data-tutorial="sidebar">
         <div className={styles['logo-container']}>
           <div className={styles['logo-square']}>SK</div>
           {!isSidebarCollapsed && <span className={styles['logo-text']}>Sketchy</span>}
@@ -339,6 +350,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
               className={styles['card-new']}
               style={{ borderStyle: 'dashed', borderWidth: '2px', cursor: isCreating ? 'wait' : 'pointer' }}
               onClick={handleCreateNew}
+              data-tutorial="create-new"
             >
               <div className={styles['icon-wrap']}>
                 {isCreating ? (
@@ -366,12 +378,17 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           </div>
         </section>
 
-        {/* Recent Work Section */}
+        {/* Projects Section */}
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
-            <h2 className={styles['recent-title']}>Recent Work</h2>
-            {projects.length > 0 && (
-              <a href="#" style={{ fontWeight: 700, color: '#005461' }}>View All</a>
+            <h2 className={styles['recent-title']}>{getSectionTitle()}</h2>
+            {filteredProjects.length > 0 && (
+              <button
+                onClick={() => setShowViewAllModal(true)}
+                style={{ fontWeight: 700, color: '#005461', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                View All
+              </button>
             )}
           </div>
 
@@ -401,6 +418,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
                   className={styles['project-card']}
                   onClick={() => handleOpenProject(project)}
                   style={{ cursor: 'pointer' }}
+                  {...(index === 0 ? { 'data-tutorial': 'project-card' } : {})}
                 >
                   <div className={styles['card-stage']} style={{ backgroundColor: PROJECT_COLORS[index % PROJECT_COLORS.length] }}>
                     <div className={styles['mockup-window']}>
@@ -414,6 +432,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
                           srcDoc={project.generatedHtml}
                           className={styles['preview-iframe']}
                           title={`Preview of ${project.name}`}
+                          sandbox="allow-scripts allow-same-origin"
                         />
                       ) : project.thumbnail ? (
                         <img
@@ -473,6 +492,60 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
         isOpen={isSupportModalOpen}
         onClose={() => setIsSupportModalOpen(false)}
       />
-    </div >
+
+      {/* View All Projects Modal */}
+      {showViewAllModal && (
+        <div className={styles['view-all-overlay']} onClick={() => setShowViewAllModal(false)}>
+          <div className={styles['view-all-modal']} onClick={(e) => e.stopPropagation()}>
+            <div className={styles['view-all-header']}>
+              <h2 className={styles['view-all-title']}>{getSectionTitle()}</h2>
+              <button className={styles['view-all-close']} onClick={() => setShowViewAllModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className={styles['view-all-grid']}>
+              {filteredProjects.map((project, index) => (
+                <div
+                  key={project._id}
+                  className={styles['view-all-card']}
+                  onClick={() => {
+                    setShowViewAllModal(false);
+                    handleOpenProject(project);
+                  }}
+                >
+                  <div className={styles['view-all-stage']} style={{ backgroundColor: PROJECT_COLORS[index % PROJECT_COLORS.length] }}>
+                    <div className={styles['view-all-window']}>
+                      <div className={styles['view-all-controls']}>
+                        <div className={styles['view-all-dot']}></div>
+                        <div className={styles['view-all-dot']}></div>
+                        <div className={styles['view-all-dot']}></div>
+                      </div>
+                      {project.generatedHtml ? (
+                        <iframe
+                          srcDoc={project.generatedHtml}
+                          className={styles['view-all-iframe']}
+                          title={`Preview of ${project.name}`}
+                          sandbox="allow-scripts allow-same-origin"
+                        />
+                      ) : project.thumbnail ? (
+                        <img src={project.thumbnail} alt={project.name} className={styles['view-all-thumbnail']} />
+                      ) : (
+                        <div className={styles['view-all-empty']}>
+                          <Pencil size={24} color="#94a3b8" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles['view-all-info']}>
+                    <span className={styles['view-all-name']}>{project.name}</span>
+                    <span className={styles['view-all-date']}>{formatRelativeTime(project.updatedAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

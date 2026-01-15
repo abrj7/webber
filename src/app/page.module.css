@@ -32,7 +32,7 @@
   background-color: #005461;
   border: 3px solid #fff;
   border-radius: 12px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,7 +62,7 @@
   line-height: 1;
   margin-bottom: 2rem;
   text-transform: uppercase;
-  text-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+  text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
   color: #005461;
 }
 
@@ -117,7 +117,25 @@
   transform: translateY(0);
 }
 
+/* Tutorial Button */
+.tutorialBtn {
+  background: transparent;
+  border: none;
+  color: #005461;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 1rem;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
 
+.tutorialBtn:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
 
 /* Canvas Header (Only visible in canvas mode) */
 .header {
