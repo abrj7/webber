@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fuzzy+Bubbles:wght@400;700&display=swap');
+
 .overlay {
     position: fixed;
     top: 0;
@@ -47,9 +49,10 @@
 
 .title {
     margin: 0 0 0.5rem;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #005461;
+    font-family: 'Fuzzy Bubbles', cursive;
 }
 
 .subtitle {
@@ -62,69 +65,123 @@
     width: 100%;
     padding: 0.875rem 1rem;
     border: 2px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 1rem;
-    transition: border-color 0.2s;
+    font-family: 'Fuzzy Bubbles', cursive;
+    transition: all 0.2s;
     margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .input:focus {
     outline: none;
     border-color: #005461;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(0, 84, 97, 0.1);
 }
 
 .buttons {
     display: flex;
+    flex-direction: column;
     gap: 0.75rem;
-    justify-content: flex-end;
 }
 
-.skipButton {
-    padding: 0.75rem 1rem;
-    border: none;
-    background: transparent;
-    color: #64748b;
+.discardButton {
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #ef4444;
+    background: white;
+    color: #ef4444;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
     cursor: pointer;
-    border-radius: 8px;
-    transition: background 0.2s;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1);
 }
 
-.skipButton:hover {
-    background: #f1f5f9;
+.discardButton:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+}
+
+.discardButton.discardConfirm {
+    background: #ef4444;
+    color: white;
+    border-color: #dc2626;
+    animation: pulse 0.5s ease-in-out;
+}
+
+.discardButton.discardConfirm:hover {
+    background: #dc2626;
+    color: white;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.warningText {
+    margin: 0;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: #dc2626;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    text-align: center;
+    background: #fef2f2;
+    border-radius: 6px;
+    border: 1px solid #fecaca;
 }
 
 .cancelButton {
-    padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #cbd5e1;
     background: white;
-    color: #64748b;
+    color: #475569;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
     cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .cancelButton:hover {
     background: #f8fafc;
-    border-color: #cbd5e1;
+    border-color: #005461;
+    color: #005461;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .saveButton {
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 1.5rem;
     border: none;
-    background: linear-gradient(135deg, #005461 0%, #4988C4 100%);
-    color: white;
+    background: linear-gradient(135deg, #4988c4 0%, #005461 100%) !important;
+    color: white !important;
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
     cursor: pointer;
-    border-radius: 8px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px -4px rgba(0, 84, 97, 0.5);
 }
 
 .saveButton:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 84, 97, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(0, 84, 97, 0.6);
 }

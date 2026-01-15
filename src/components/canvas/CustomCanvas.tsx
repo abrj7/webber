@@ -19,7 +19,8 @@ import {
   Layout,
   Columns,
   Eye,
-  RotateCw
+  RotateCw,
+  Pencil
 } from "lucide-react";
 import { Tldraw, Editor } from "tldraw";
 import "tldraw/tldraw.css";
@@ -52,12 +53,14 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
   const [generatedHtml, setGeneratedHtml] = useState("");
   const [editor, setEditor] = useState<Editor | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+
 
   // Backend/Persistence State
   const [showNameModal, setShowNameModal] = useState(false);
   const [currentProjectName, setCurrentProjectName] = useState(projectName);
   const [showHistory, setShowHistory] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
   const [versions, setVersions] = useState<Array<{ _id: string; versionNumber: number; createdAt: string }>>([]);
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
   const [viewingVersion, setViewingVersion] = useState<{ _id: string; versionNumber: number; createdAt: string; generatedHtml: string } | null>(null);
@@ -314,17 +317,21 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
   };
 
   // Handle name save
-  const handleNameSave = async (newName: string) => {
-    if (projectId && newName !== currentProjectName) {
-      await fetch(`/api/projects/${projectId}`, {
+  const handleNameSave = async (name: string) => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
+        body: JSON.stringify({ name }),
       });
-      setCurrentProjectName(newName);
+      if (res.ok) {
+        setCurrentProjectName(name);
+        setShowNameModal(false);
+        // Don't navigate back - just update the name
+      }
+    } catch (error) {
+      console.error("Failed to save project name:", error);
     }
-    setShowNameModal(false);
-    onBack();
   };
 
   // Fetch version history
@@ -494,12 +501,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
     }
   }, [editor, projectId]);
 
-  // Update tldraw dark mode when isDarkMode changes
-  useEffect(() => {
-    if (editor) {
-      editor.user.updateUserPreferences({ colorScheme: isDarkMode ? 'dark' : 'light' });
-    }
-  }, [editor, isDarkMode]);
+
 
   const handleGenerate = async (isRegenerate = false) => {
     if (isGenerating) return;
@@ -759,7 +761,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
   };
 
   return (
-    <div className={`${styles.container} ${isDarkMode ? styles.darkMode : ''}`}>
+    <div className={styles.container}>
       {/* Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.leftSection}>
@@ -793,6 +795,50 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               <span>History</span>
             </button>
           </div>
+
+          {/* Editable Project Title */}
+          <div className={styles.projectTitleSection}>
+            {isEditingTitle ? (
+              <input
+                type="text"
+                className={styles.projectTitleInput}
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onBlur={() => {
+                  if (editedTitle.trim()) {
+                    handleNameSave(editedTitle.trim());
+                  }
+                  setIsEditingTitle(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (editedTitle.trim()) {
+                      handleNameSave(editedTitle.trim());
+                    }
+                    setIsEditingTitle(false);
+                  } else if (e.key === 'Escape') {
+                    setIsEditingTitle(false);
+                    setEditedTitle(currentProjectName);
+                  }
+                }}
+                autoFocus
+              />
+            ) : (
+              <div className={styles.projectTitleDisplay}>
+                <span className={styles.projectTitle}>{currentProjectName}</span>
+                <button
+                  className={styles.editTitleBtn}
+                  onClick={() => {
+                    setEditedTitle(currentProjectName);
+                    setIsEditingTitle(true);
+                  }}
+                  title="Rename project"
+                >
+                  <Pencil size={14} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.centerSection}>
@@ -818,13 +864,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               <Eye size={14} />
               <span>Preview</span>
             </button>
-            <button
-              className={styles.darkModeToggle}
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+
           </div>
         </div>
 
@@ -1103,7 +1143,7 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
               });
             }
           }}
-          isDarkMode={isDarkMode}
+
         />
       </div>
 
@@ -1221,6 +1261,20 @@ export default function CustomCanvas({ onBack, projectId, projectName = "Untitle
         currentName={currentProjectName}
         onSave={handleNameSave}
         onCancel={() => setShowNameModal(false)}
+        onDiscard={async () => {
+          // Delete the project from database
+          if (projectId) {
+            try {
+              await fetch(`/api/projects/${projectId}`, {
+                method: "DELETE",
+              });
+            } catch (error) {
+              console.error("Failed to delete project:", error);
+            }
+          }
+          // Navigate back to dashboard
+          onBack();
+        }}
       />
     </div>
   );

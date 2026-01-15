@@ -328,6 +328,10 @@
   }
 }
 
+.darkMode .verticalSettings {
+  background: rgba(15, 23, 42, 0.95);
+  border-right: 1px solid rgba(51, 65, 85, 0.6);
+}
 
 .settingsPanel {
   background: white;
@@ -481,7 +485,16 @@
   transform: translateX(4px);
 }
 
+.darkMode .versionItem {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
 
+.darkMode .versionItem:hover {
+  background: #334155;
+  border-color: #4988c4;
+}
 
 /* Version Preview Banner */
 .versionBanner {
@@ -495,9 +508,32 @@
   color: #92400e;
 }
 
+.darkMode .versionBanner {
+  background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+  border-bottom: 1px solid #b45309;
+  color: #fde68a;
+}
 
 /* Dark Mode Toggle Button */
+.darkModeToggle {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
 
+.darkModeToggle:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: #fbbf24;
+  transform: scale(1.08) rotate(15deg);
+}
 
 /* Resize Handle */
 .resizeHandle {
@@ -625,48 +661,185 @@
 
 /* ==================== DARK MODE STYLES ==================== */
 
+.darkMode {
+  background-color: #000000;
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(73, 136, 196, 0.1) 0%, transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(0, 84, 97, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(0, 84, 97, 0.08) 0%, transparent 50%);
+}
 
+.darkMode::after {
+  background-image: radial-gradient(rgba(100, 116, 139, 0.15) 1px, transparent 1px);
+}
 
 /* Dark Mode Toolbar */
+.darkMode .toolbar {
+  background: rgba(0, 0, 0, 0.95);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
 
 /* Dark Mode View Tabs */
+.darkMode .viewTabs {
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
 
+.darkMode .tabBtn {
+  color: #94a3b8;
+}
 
+.darkMode .tabBtn:hover {
+  color: #e2e8f0;
+}
 
+.darkMode .activeTab {
+  background: linear-gradient(135deg, #4988c4 0%, #005461 100%);
+  color: white;
+}
 
 /* Dark Mode Icon Buttons */
+.darkMode .iconBtn {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  color: #94a3b8;
+}
 
+.darkMode .iconBtn:hover {
+  background: rgba(51, 65, 85, 0.9);
+  border-color: rgba(73, 136, 196, 0.4);
+  color: #e2e8f0;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+}
 
 /* Dark Mode Secondary Buttons */
+.darkMode .secondaryBtn,
+.darkMode .deployBtn,
+.darkMode .generateBtn {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1.5px solid #4988c4 !important;
+  color: #4988c4 !important;
+  box-shadow: none !important;
+}
 
+.darkMode .secondaryBtn:hover,
+.darkMode .deployBtn:hover,
+.darkMode .generateBtn:hover {
+  background: rgba(73, 136, 196, 0.15) !important;
+  color: white !important;
+}
 
+.darkMode .activeBtn {
+  background: #4988c4 !important;
+  color: white !important;
+  border-color: #4988c4 !important;
+}
 
 /* Dark Mode Generate Button */
+.darkMode .generateBtn {
+  border-color: #4988c4;
+  color: #4988c4;
+}
 
+.darkMode .generateBtn:hover {
+  color: white;
+}
 
 /* Dark Mode Dark Mode Toggle */
+.darkMode .darkModeToggle {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  color: #fbbf24;
+}
 
+.darkMode .darkModeToggle:hover {
+  background: rgba(51, 65, 85, 0.9);
+  color: #fcd34d;
+}
 
 /* Dark Mode Settings Panel */
+.darkMode .settingsPanel {
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
 
+.darkMode .settingsHeader {
+  border-bottom: 1px solid #334155;
+  color: #e2e8f0;
+}
 
+.darkMode .settingsLabel {
+  color: #94a3b8;
+}
 
+.darkMode .styleBtn {
+  background: #1e293b;
+  border: 2px solid #334155;
+  color: #94a3b8;
+}
 
+.darkMode .styleBtn::before {
+  background-color: #4988c4;
+}
 
+.darkMode .styleBtn:hover {
+  border-color: #4988c4;
+  color: white;
+}
 
+.darkMode .activeStyleBtn {
+  background: linear-gradient(135deg, #4988c4 0%, #005461 100%);
+  border-color: #4988c4;
+  color: white;
+}
 
+.darkMode .colorInput {
+  border: 2px solid #334155;
+  background: #1e293b;
+}
 
+.darkMode .colorValue {
+  color: #94a3b8;
+}
 
 /* Dark Mode Preview Header - but keep preview content white */
+.darkMode .previewHeader {
+  background: rgba(30, 41, 59, 0.9);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  color: #e2e8f0;
+}
 
 /* Preview iframe stays white - it shows the generated website */
+.darkMode .previewIframe {
+  background: white;
+}
 
 /* Dark Mode Resize Handle */
+.darkMode .resizeHandle {
+  background: rgba(51, 65, 85, 0.6);
+}
 
+.darkMode .resizeHandle:hover,
+.darkMode .resizeHandle.resizing {
+  background: rgba(73, 136, 196, 0.3);
+}
 
+.darkMode .resizeHandleBar {
+  background: rgba(148, 163, 184, 0.4);
+}
 
+.darkMode .resizeHandle:hover .resizeHandleBar,
+.darkMode .resizeHandle.resizing .resizeHandleBar {
+  background: rgba(73, 136, 196, 0.6);
+}
 
 /* Dark Mode Canvas Section - match navbar color */
+.darkMode .canvasSection :global(.tl-container) {
+  background: #000000 !important;
+}
 
 /* ================================
    WELCOME OVERLAY STYLES
@@ -782,11 +955,37 @@
 }
 
 /* Dark Mode Welcome Overlay */
+.darkMode .hintTopLeft,
+.darkMode .hintTopCenter,
+.darkMode .hintToolPicker {
+  color: #94a3b8;
+}
 
+.darkMode .hintText,
+.darkMode .hintTextMove {
+  color: #94a3b8;
+}
 
+.darkMode .hintTextMove kbd {
+  background: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
 
+.darkMode .arrowCurved,
+.darkMode .arrowUp,
+.darkMode .arrowDown {
+  color: #94a3b8;
+}
 
+.darkMode .welcomeLogo {
+  color: #4988c4;
+  text-shadow: 2px 2px 0 rgba(0, 84, 97, 0.3);
+}
 
+.darkMode .welcomeSubtext {
+  color: #94a3b8;
+}
 
 /* Hint pointing to AI Sidebar */
 .hintSidebar {
@@ -818,9 +1017,21 @@
 }
 
 /* Dark Mode Sidebar Hint */
+.darkMode .hintSidebar {
+  color: #94a3b8;
+}
 
+.darkMode .hintTextSidebar {
+  color: #94a3b8;
+}
 
+.darkMode .hintTextSidebar strong {
+  color: #4988c4;
+}
 
+.darkMode .arrowSquiggly {
+  color: #94a3b8;
+}
 
 /* ==================== DEPLOY MODAL & BUTTON ==================== */
 
@@ -854,7 +1065,16 @@
   transform: scale(1.15);
 }
 
+.darkMode .deployBtn {
+  background: transparent;
+  border: 2px solid #4988c4;
+  color: #4988c4;
+}
 
+.darkMode .deployBtn:hover {
+  background: rgba(73, 136, 196, 0.1);
+  color: white;
+}
 
 .modalOverlay {
   position: fixed;
@@ -876,6 +1096,11 @@
   overflow: hidden;
 }
 
+.darkMode .modal {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: white;
+}
 
 .modalHeader {
   padding: 1.25rem;
@@ -892,6 +1117,9 @@
   color: #1e293b;
 }
 
+.darkMode .modalHeader h3 {
+  color: white;
+}
 
 .modalContent {
   padding: 1.5rem;
@@ -986,82 +1214,7 @@
   word-break: break-all;
 }
 
-
-/* Project Title Section */
-.projectTitleSection {
-  display: flex;
-  align-items: center;
-  margin-left: 2rem;
-  padding-left: 2rem;
-  border-left: 2px solid rgba(0, 84, 97, 0.15);
-}
-
-.projectTitleDisplay {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  transition: all 0.2s;
-}
-
-.projectTitleDisplay:hover {
-  background: rgba(0, 84, 97, 0.05);
-}
-
-.projectTitle {
-  font-family: 'Fuzzy Bubbles', cursive;
-  font-size: 1.25rem;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ws-ink, #005461);
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.editTitleBtn {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  opacity: 0;
-}
-
-.projectTitleDisplay:hover .editTitleBtn {
-  opacity: 1;
-}
-
-.editTitleBtn:hover {
-  background: rgba(0, 84, 97, 0.1);
-  color: var(--ws-teal, #005461);
-  transform: scale(1.1);
-}
-
-.projectTitleInput {
-  font-family: 'Fuzzy Bubbles', cursive;
-  font-size: 1.25rem;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ws-ink, #005461);
-  background: white;
-  border: 2px solid var(--ws-teal, #005461);
-  border-radius: 12px;
-  padding: 0.5rem 1rem;
-  outline: none;
-  min-width: 200px;
-  max-width: 400px;
-}
-
-.projectTitleInput:focus {
-  box-shadow: 0 0 0 3px rgba(0, 84, 97, 0.1);
+.darkMode .deployUrl {
+  background: #334155;
+  color: #4988c4;
 }

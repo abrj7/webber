@@ -8,6 +8,7 @@ interface NamePromptModalProps {
     currentName: string;
     onSave: (name: string) => void;
     onCancel: () => void;
+    onDiscard?: () => void; // New prop to handle actual deletion
 }
 
 export default function NamePromptModal({
@@ -15,13 +16,16 @@ export default function NamePromptModal({
     currentName,
     onSave,
     onCancel,
+    onDiscard,
 }: NamePromptModalProps) {
     const [name, setName] = useState(currentName);
+    const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
             setName(currentName);
+            setShowDiscardConfirm(false); // Reset confirmation state
             // Focus input when modal opens
             setTimeout(() => inputRef.current?.focus(), 100);
         }
@@ -32,8 +36,12 @@ export default function NamePromptModal({
         onSave(name.trim() || currentName);
     };
 
-    const handleSkip = () => {
-        onSave(currentName); // Keep current name
+    const handleDiscard = () => {
+        if (showDiscardConfirm && onDiscard) {
+            onDiscard(); // Actually delete the project
+        } else {
+            setShowDiscardConfirm(true); // Show confirmation
+        }
     };
 
     if (!isOpen) return null;
@@ -63,15 +71,9 @@ export default function NamePromptModal({
                     />
 
                     <div className={styles.buttons}>
-                        {isUntitled && (
-                            <button
-                                type="button"
-                                className={styles.skipButton}
-                                onClick={handleSkip}
-                            >
-                                Keep as Untitled
-                            </button>
-                        )}
+                        <button type="submit" className={styles.saveButton}>
+                            Save & Exit
+                        </button>
                         <button
                             type="button"
                             className={styles.cancelButton}
@@ -79,9 +81,20 @@ export default function NamePromptModal({
                         >
                             Cancel
                         </button>
-                        <button type="submit" className={styles.saveButton}>
-                            Save & Exit
-                        </button>
+                        {isUntitled && (
+                            <button
+                                type="button"
+                                className={`${styles.discardButton} ${showDiscardConfirm ? styles.discardConfirm : ''}`}
+                                onClick={handleDiscard}
+                            >
+                                {showDiscardConfirm ? "⚠️ Confirm Delete" : "Discard"}
+                            </button>
+                        )}
+                        {showDiscardConfirm && (
+                            <p className={styles.warningText}>
+                                This will permanently delete your project!
+                            </p>
+                        )}
                     </div>
                 </form>
             </div>

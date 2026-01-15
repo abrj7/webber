@@ -17,7 +17,6 @@ interface ChatPanelProps {
         elements: string[];
     } | null;
     onHtmlUpdate: (newHtml: string) => void;
-    isDarkMode: boolean;
 }
 
 interface HistoryItem {
@@ -27,16 +26,15 @@ interface HistoryItem {
     type: 'user' | 'ai';
 }
 
-export default function ChatPanel({ 
-    isCollapsed, 
+export default function ChatPanel({
+    isCollapsed,
     onToggle,
     generatedHtml,
     websiteStyle,
     backgroundColor,
     accentColor,
     analysisData,
-    onHtmlUpdate,
-    isDarkMode
+    onHtmlUpdate
 }: ChatPanelProps) {
     const [prompt, setPrompt] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -78,7 +76,7 @@ export default function ChatPanel({
         };
 
         const baseSuggestions = styleSuggestions[websiteStyle] || styleSuggestions.modern;
-        
+
         // Add element-specific suggestions if we have analysis data
         if (analysisData?.elements && analysisData.elements.length > 0) {
             const elementSuggestions: string[] = [];
@@ -87,20 +85,20 @@ export default function ChatPanel({
             }
             return [...baseSuggestions.slice(0, 3), ...elementSuggestions.slice(0, 2)];
         }
-        
+
         return baseSuggestions;
     };
 
     const handleApplyChanges = async () => {
         if (!prompt.trim()) return;
-        
+
         if (!generatedHtml) {
             alert("Generate a website first before using chat!");
             return;
         }
 
         setIsLoading(true);
-        
+
         // Add user message to history
         const userMessage: HistoryItem = {
             id: Date.now(),
@@ -109,7 +107,7 @@ export default function ChatPanel({
             type: 'user'
         };
         setHistory(prev => [...prev, userMessage]);
-        
+
         const currentPrompt = prompt;
         setPrompt("");
 
@@ -152,7 +150,7 @@ export default function ChatPanel({
                     </html>
                 `;
                 onHtmlUpdate(fullHtml);
-                
+
                 // Add AI response to history
                 const aiMessage: HistoryItem = {
                     id: Date.now() + 1,
@@ -161,7 +159,7 @@ export default function ChatPanel({
                     type: 'ai'
                 };
                 setHistory(prev => [...prev, aiMessage]);
-                
+
                 console.log("✅ Chat changes applied:", data.changes);
             }
         } catch (err) {
@@ -188,7 +186,7 @@ export default function ChatPanel({
     const suggestions = generateSuggestions();
 
     return (
-        <aside className={`${styles.panel} ${isCollapsed ? styles.collapsed : ''} ${isDarkMode ? styles.darkMode : ''}`}>
+        <aside className={`${styles.panel} ${isCollapsed ? styles.collapsed : ''}`}>
             {isCollapsed ? (
                 <button className={styles.expandBtn} onClick={onToggle} title="Expand chat">
                     <ChevronLeft size={20} />
@@ -214,7 +212,7 @@ export default function ChatPanel({
                                 rows={3}
                                 disabled={!generatedHtml || isLoading}
                             />
-                            <button 
+                            <button
                                 className={styles.applyBtn}
                                 onClick={handleApplyChanges}
                                 disabled={!generatedHtml || !prompt.trim() || isLoading}
@@ -254,8 +252,8 @@ export default function ChatPanel({
                             <div className={styles.historySection}>
                                 <h3 className={styles.historyTitle}>Chat History</h3>
                                 {history.map((item) => (
-                                    <div 
-                                        key={item.id} 
+                                    <div
+                                        key={item.id}
                                         className={`${styles.historyItem} ${item.type === 'user' ? styles.userMessage : styles.aiMessage}`}
                                     >
                                         <p className={styles.historyText}>{item.text}</p>

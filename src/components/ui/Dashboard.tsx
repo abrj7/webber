@@ -78,6 +78,13 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set());
   const [recentlyOpened, setRecentlyOpened] = useState<Record<string, number>>({});
   const [activeFilter, setActiveFilter] = useState<'all' | 'starred' | 'recent'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchModal, setShowSearchModal] = useState(false);
+
+  // Refs for scrolling
+  const topRef = React.useRef<HTMLDivElement>(null);
+  const recentWorkRef = React.useRef<HTMLDivElement>(null);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -131,6 +138,25 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
 
     return () => clearInterval(typingInterval);
   }, [user]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+K or Ctrl+K to open search modal
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearchModal(true);
+      }
+      // Escape to close modal
+      if (e.key === 'Escape') {
+        setShowSearchModal(false);
+        setSearchQuery('');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const fetchProjects = async (userId: string) => {
     try {
@@ -226,16 +252,27 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
   };
 
   const filteredProjects = (() => {
+    let filtered = projects;
+
+    // Apply filter (all/starred/recent)
     if (activeFilter === 'starred') {
-      return projects.filter(p => starredProjects.has(p._id));
-    }
-    if (activeFilter === 'recent') {
+      filtered = projects.filter(p => starredProjects.has(p._id));
+    } else if (activeFilter === 'recent') {
       // Only show projects that have been opened, sorted by most recent
-      return projects
+      filtered = projects
         .filter(p => recentlyOpened[p._id])
         .sort((a, b) => (recentlyOpened[b._id] || 0) - (recentlyOpened[a._id] || 0));
     }
-    return projects;
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
   })();
 
   return (
@@ -251,7 +288,10 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           <div
             className={`${styles['nav-link']} ${activeFilter === 'all' ? styles.active : ''}`}
             title="Home"
-            onClick={() => setActiveFilter('all')}
+            onClick={() => {
+              setActiveFilter('all');
+              topRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             <Home size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Dashboard</span>}
@@ -259,7 +299,10 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           <div
             className={`${styles['nav-link']} ${activeFilter === 'recent' ? styles.active : ''}`}
             title="Recent"
-            onClick={() => setActiveFilter('recent')}
+            onClick={() => {
+              setActiveFilter('recent');
+              recentWorkRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             <Clock size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Recent</span>}
@@ -267,7 +310,10 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           <div
             className={`${styles['nav-link']} ${activeFilter === 'starred' ? styles.active : ''}`}
             title="Starred"
-            onClick={() => setActiveFilter('starred')}
+            onClick={() => {
+              setActiveFilter('starred');
+              recentWorkRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             <Star size={22} strokeWidth={2} />
             {!isSidebarCollapsed && <span>Starred</span>}
@@ -308,7 +354,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
         </header>
 
         {/* Editorial Greeting */}
-        <section>
+        <section ref={topRef}>
           <h1 className={styles['greeting-serif']}>
             {displayedGreeting}
             <span className={`${styles['typing-cursor']} ${isTypingComplete ? styles['cursor-blink'] : ''}`}>|</span>
@@ -316,17 +362,15 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           <p className={styles['sub-greeting']}>Your creative workspace is ready. Pick up where you left off.</p>
 
           <div className={styles['search-area']}>
-            <div className={styles['search-pill']}>
+            <div
+              className={styles['search-pill']}
+              onClick={() => setShowSearchModal(true)}
+              style={{ cursor: 'pointer' }}
+            >
               <Search size={22} color="#94a3b8" strokeWidth={2.5} />
-              <input
-                type="text"
-                placeholder="Search projects, components, or files..."
-                className={styles['search-input']}
-              />
-              <div className={styles['v-divider']}></div>
-              <button style={{ padding: '0.75rem', borderRadius: '9999px', color: '#94a3b8' }} className="hover:bg-white hover:text-black">
-                <SlidersHorizontal size={22} strokeWidth={2} />
-              </button>
+              <div className={styles['search-input']} style={{ cursor: 'pointer' }}>
+                {searchQuery || 'Search projects, components, or files...'}
+              </div>
             </div>
           </div>
         </section>
@@ -367,7 +411,7 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
         </section>
 
         {/* Recent Work Section */}
-        <section>
+        <section ref={recentWorkRef}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
             <h2 className={styles['recent-title']}>Recent Work</h2>
             {projects.length > 0 && (
@@ -467,6 +511,71 @@ export default function Dashboard({ onCreateNew, onHome, onLogout, onOpenProject
           )}
         </section>
       </main>
+
+      {/* Search Modal */}
+      {showSearchModal && (
+        <div className={styles['search-modal-overlay']} onClick={() => {
+          setShowSearchModal(false);
+          setSearchQuery('');
+        }}>
+          <div className={styles['search-modal']} onClick={(e) => e.stopPropagation()}>
+            <div className={styles['search-modal-header']}>
+              <Search size={24} color="#005461" strokeWidth={2.5} />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search projects..."
+                className={styles['search-modal-input']}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+              <button
+                className={styles['search-modal-close']}
+                onClick={() => {
+                  setShowSearchModal(false);
+                  setSearchQuery('');
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles['search-modal-results']}>
+              {searchQuery.trim() ? (
+                filteredProjects.length > 0 ? (
+                  filteredProjects.map((project) => (
+                    <div
+                      key={project._id}
+                      className={styles['search-modal-result']}
+                      onClick={() => {
+                        handleOpenProject(project);
+                        setSearchQuery('');
+                        setShowSearchModal(false);
+                      }}
+                    >
+                      <div className={styles['result-content']}>
+                        <div className={styles['result-name']}>{project.name}</div>
+                        <div className={styles['result-meta']}>
+                          {formatRelativeTime(project.updatedAt)}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className={styles['search-empty']}>
+                    No projects found matching "{searchQuery}"
+                  </div>
+                )
+              ) : (
+                <div className={styles['search-empty']}>
+                  Start typing to search your projects...
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Support Modal */}
       <SupportModal
